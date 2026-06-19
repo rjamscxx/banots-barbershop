@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { getBookingsByStatus } from "@/lib/dashboard-data";
 
 const TABS = [
   { href: "/dashboard", label: "Today" },
@@ -11,9 +10,8 @@ const TABS = [
   { href: "/dashboard/settings", label: "Settings" },
 ];
 
-export function DashboardNav() {
+export function DashboardNav({ pendingCount }: { pendingCount: number }) {
   const pathname = usePathname();
-  const pendingCount = getBookingsByStatus("pending_verification").length;
 
   return (
     <nav className="flex border-t border-divider bg-white">

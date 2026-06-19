@@ -1,6 +1,6 @@
 ---
 name: run-banot-barbershop
-description: Build, run, and drive Banot's Barbershop (Next.js booking app). Use when asked to start the app, run it in a browser, take a screenshot of its UI, smoke-test the routes, or test the walk-in booking flow.
+description: Build, run, and drive Banot's Barbershop (Next.js booking app). Use when asked to start the app, run it in a browser, take a screenshot of its UI, smoke-test the routes, test the walk-in booking flow, or test the public online booking flow end-to-end into the dashboard.
 ---
 
 This is a Next.js 16 (App Router, Turbopack) app with no backend yet —
@@ -48,6 +48,7 @@ timeout 60 bash -c 'until curl -sf http://localhost:3050 >/dev/null; do sleep 1;
 ```bash
 node .claude/skills/run-banot-barbershop/driver.mjs smoke
 node .claude/skills/run-banot-barbershop/driver.mjs walkin
+node .claude/skills/run-banot-barbershop/driver.mjs fullbooking
 ```
 
 Screenshots land in `.claude/skills/run-banot-barbershop/screenshots/`.
@@ -58,6 +59,7 @@ assertions) and any browser console errors.
 |---|---|
 | `smoke` | Visits `/`, `/book`, `/dashboard`, `/dashboard/pending`, `/dashboard/clients`, `/dashboard/settings`, `/dashboard/walk-in`, `/dashboard/login`; screenshots each; reports HTTP status + console errors per route |
 | `walkin` | Drives the full "Add walk-in" flow from `/dashboard`: fills client name/phone, picks a service + time, submits, and asserts the new booking appears on Today's view with the "Walk-in" marker |
+| `fullbooking` | Drives the full public `/book` flow (service → date/time → details → payment + fake proof upload → submit), then checks `/dashboard/pending` for the new request — proves the public booking page and dashboard are wired to the same store, not two disconnected mocks |
 
 The driver reads `BASE_URL` env var or a second CLI arg if you used a
 different port: `node driver.mjs smoke http://localhost:3050`.
@@ -104,6 +106,13 @@ closest thing to an integration test right now.
   dev` defaults to 3000, but other Next.js projects on this machine
   may already be running there. Always pass `--port` explicitly and
   verify with `netstat` rather than assuming 3000/3001 are free.
+- **A `"use client"` component that imports straight from
+  `src/lib/dashboard-data.ts` and calls a function like
+  `getBookingsByStatus(...)` gets a frozen snapshot baked into the
+  client bundle, not live server data.** `DashboardNav`'s pending
+  badge count was stale this way until fixed — compute counts in a
+  server component (e.g. the layout) and pass them down as props
+  instead of calling data functions directly inside client components.
 - **`npx playwright install chromium` silently no-ops with just a
   warning banner** if Playwright isn't a listed dependency of the
   current directory's `package.json` yet — install it as a real
@@ -116,6 +125,12 @@ closest thing to an integration test right now.
   pass a regex to `{ label: ... }` — Playwright's `selectOption` wants
   a literal string for `value`/`label`. Use `{ value: 'ExactOptionValue' }`
   matching the `<option value=...>` in the JSX.
-- **Driver can't find the dev server**: the `smoke`/`walkin` scenarios
-  assume `http://localhost:3050` by default — pass the real URL as a
-  second arg if you started the server on a different port.
+- **Driver can't find the dev server**: all scenarios assume
+  `http://localhost:3050` by default — pass the real URL as a second
+  arg if you started the server on a different port.
+- **`fullbooking` picks a date 4 days out, not today**: the seed mock
+  data and the `walkin` scenario both create bookings dated "today,"
+  so picking a same-day slot risks colliding with `isSlotTaken` (the
+  online flow now actually enforces the first-come-first-served slot
+  lock against the dashboard's data). Picking a future date sidesteps
+  that without the driver needing to inspect existing bookings first.

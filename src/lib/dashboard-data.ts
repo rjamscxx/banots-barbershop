@@ -24,6 +24,7 @@ export type Booking = {
   source: BookingSource;
   proofImageUrl: string | null;
   paymentMethod: string | null;
+  reference: string | null;
   createdAt: string;
 };
 
@@ -53,6 +54,7 @@ export const BOOKINGS: Booking[] = [
     source: "online",
     proofImageUrl: "proof-b1.jpg",
     paymentMethod: "gcash",
+    reference: "BNT-100001",
     createdAt: "2026-06-17",
   },
   {
@@ -65,6 +67,7 @@ export const BOOKINGS: Booking[] = [
     source: "walk_in",
     proofImageUrl: null,
     paymentMethod: null,
+    reference: null,
     createdAt: "2026-06-19",
   },
   {
@@ -77,6 +80,7 @@ export const BOOKINGS: Booking[] = [
     source: "online",
     proofImageUrl: "proof-b3.jpg",
     paymentMethod: "maya",
+    reference: "BNT-100003",
     createdAt: "2026-06-19",
   },
   {
@@ -89,6 +93,7 @@ export const BOOKINGS: Booking[] = [
     source: "online",
     proofImageUrl: "proof-b4.jpg",
     paymentMethod: "bdo",
+    reference: "BNT-100004",
     createdAt: "2026-06-19",
   },
 ];
@@ -127,6 +132,7 @@ export function addWalkInBooking(input: {
     source: "walk_in",
     proofImageUrl: null,
     paymentMethod: null,
+    reference: null,
     createdAt: new Date().toISOString().slice(0, 10),
   };
   BOOKINGS.push(booking);
@@ -143,6 +149,46 @@ export function addClient(input: { name: string; phone: string }) {
   };
   CLIENTS.push(client);
   return client;
+}
+
+export function findOrCreateClient(input: { name: string; phone: string }) {
+  const existing = CLIENTS.find((c) => c.phone.trim() === input.phone.trim());
+  if (existing) return existing;
+  return addClient(input);
+}
+
+const ACTIVE_STATUSES: BookingStatus[] = ["pending_verification", "confirmed", "completed"];
+
+export function isSlotTaken(date: string, time: string) {
+  return BOOKINGS.some(
+    (b) => b.date === date && b.time === time && ACTIVE_STATUSES.includes(b.status)
+  );
+}
+
+export function addOnlineBooking(input: {
+  clientId: string;
+  service: BookingServiceSnapshot;
+  date: string;
+  time: string;
+  proofImageUrl: string;
+  paymentMethod: string;
+  reference: string;
+}) {
+  const booking: Booking = {
+    id: `b${BOOKINGS.length + 1}`,
+    clientId: input.clientId,
+    service: input.service,
+    date: input.date,
+    time: input.time,
+    status: "pending_verification",
+    source: "online",
+    proofImageUrl: input.proofImageUrl,
+    paymentMethod: input.paymentMethod,
+    reference: input.reference,
+    createdAt: new Date().toISOString().slice(0, 10),
+  };
+  BOOKINGS.push(booking);
+  return booking;
 }
 
 export function getBookingsByDate(date: string) {

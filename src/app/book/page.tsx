@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { generateBookingReference } from "@/lib/booking-data";
+import { submitBooking } from "./actions";
 import { INITIAL_BOOKING_STATE, type BookingStep } from "@/components/booking/types";
 import { ServiceStep } from "@/components/booking/ServiceStep";
 import { DateTimeStep } from "@/components/booking/DateTimeStep";
@@ -16,6 +16,36 @@ export default function BookPage() {
   const router = useRouter();
   const [step, setStep] = useState<BookingStep>("services");
   const [booking, setBooking] = useState(INITIAL_BOOKING_STATE);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  async function handleSubmitBooking() {
+    if (!booking.service || !booking.date || !booking.time || !booking.paymentMethod || !booking.proofFileName) {
+      return;
+    }
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    const result = await submitBooking({
+      service: booking.service,
+      date: booking.date,
+      time: booking.time,
+      clientName: booking.clientName,
+      clientPhone: booking.clientPhone,
+      paymentMethod: booking.paymentMethod,
+      proofFileName: booking.proofFileName,
+    });
+
+    setIsSubmitting(false);
+
+    if (!result.ok) {
+      setSubmitError(result.error);
+      return;
+    }
+
+    setBooking((b) => ({ ...b, reference: result.reference }));
+    goTo("confirmation");
+  }
 
   function goTo(target: BookingStep) {
     setStep(target);
@@ -64,13 +94,19 @@ export default function BookPage() {
             service={booking.service}
             paymentMethod={booking.paymentMethod}
             proofFileName={booking.proofFileName}
-            onSelectMethod={(paymentMethod) => setBooking((b) => ({ ...b, paymentMethod }))}
+            error={submitError}
+            isSubmitting={isSubmitting}
+            onSelectMethod={(paymentMethod) => {
+              setSubmitError(null);
+              setBooking((b) => ({ ...b, paymentMethod }));
+            }}
             onUploadProof={(proofFileName) => setBooking((b) => ({ ...b, proofFileName }))}
             onBack={goBack}
-            onNext={() => {
-              setBooking((b) => ({ ...b, reference: generateBookingReference() }));
-              goTo("confirmation");
+            onPickDifferentTime={() => {
+              setSubmitError(null);
+              goTo("datetime");
             }}
+            onNext={handleSubmitBooking}
           />
         )}
 

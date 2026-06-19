@@ -5,9 +5,12 @@ type PaymentStepProps = {
   service: Service | null;
   paymentMethod: string | null;
   proofFileName: string | null;
+  error?: string | null;
+  isSubmitting?: boolean;
   onSelectMethod: (id: string) => void;
   onUploadProof: (fileName: string) => void;
   onBack: () => void;
+  onPickDifferentTime: () => void;
   onNext: () => void;
 };
 
@@ -15,9 +18,12 @@ export function PaymentStep({
   service,
   paymentMethod,
   proofFileName,
+  error,
+  isSubmitting,
   onSelectMethod,
   onUploadProof,
   onBack,
+  onPickDifferentTime,
   onNext,
 }: PaymentStepProps) {
   return (
@@ -75,15 +81,25 @@ export function PaymentStep({
             <span className="text-xs text-zinc-500">Selected: {proofFileName}</span>
           ) : null}
         </label>
+
+        {error ? (
+          <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error} Go back to{" "}
+            <button onClick={onPickDifferentTime} className="font-semibold underline">
+              pick a different time
+            </button>
+            .
+          </div>
+        ) : null}
       </div>
 
       <div className="px-6 pb-8">
         <button
           onClick={onNext}
-          disabled={!paymentMethod || !proofFileName}
+          disabled={!paymentMethod || !proofFileName || isSubmitting}
           className="flex h-13 w-full items-center justify-center rounded-full bg-brand-gold px-5 text-base font-bold text-brand-black transition-colors hover:bg-brand-gold-pressed disabled:opacity-40"
         >
-          Submit booking request
+          {isSubmitting ? "Submitting…" : "Submit booking request"}
         </button>
       </div>
     </div>

@@ -16,6 +16,9 @@ export default async function BookingDetailPage({
   return (
     <div className="flex flex-1 flex-col px-6 py-6">
       <h1 className="text-xl font-bold text-foreground">Booking request</h1>
+      {booking.reference ? (
+        <p className="text-sm text-zinc-500">Ref: {booking.reference}</p>
+      ) : null}
 
       <div className="mt-4 rounded-xl border border-divider bg-surface-gray px-4 py-4">
         <div className="flex justify-between text-sm">

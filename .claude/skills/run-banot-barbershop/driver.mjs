@@ -1,12 +1,12 @@
 // Driver for Banot's Barbershop (Next.js app). Drives the running dev
 // server with Playwright. Usage:
 //   node .claude/skills/run-banot-barbershop/driver.mjs <scenario> [baseUrl]
-// Scenarios: smoke, walkin
+// Scenarios: smoke, walkin, fullbooking
 //
 // Requires the dev server already running (see SKILL.md "Run").
 
 import { chromium } from "playwright";
-import { mkdirSync } from "fs";
+import { mkdirSync, writeFileSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -97,7 +97,59 @@ async function scenarioWalkin() {
   );
 }
 
-const scenarios = { smoke: scenarioSmoke, walkin: scenarioWalkin };
+async function scenarioFullBooking() {
+  const clientName = `Online Client ${Date.now()}`;
+  const proofPath = path.join(SHOT_DIR, "fake-proof.png");
+  writeFileSync(proofPath, Buffer.from([0x89, 0x50, 0x4e, 0x47])); // minimal stub, just needs to exist
+
+  let reference = null;
+  let pendingCardVisible = false;
+
+  const consoleErrors = await withBrowser(async (page) => {
+    await page.goto(`${BASE}/book`, { waitUntil: "networkidle" });
+    await page.screenshot({ path: shotPath("fullbooking-1-services") });
+
+    // exact-match "Haircut" so it doesn't also match "Haircut + Shave"
+    await page.click('text="Haircut"');
+    await page.click("text=Continue");
+
+    // date buttons: [0]=back, [1..7]=date chips — pick offset 3 (a date with no
+    // pre-existing mock bookings, since seed/test data clusters on "today")
+    await page.locator("button").nth(4).click();
+    await page.click('text="9:00 AM"');
+    await page.click("text=Continue");
+    await page.screenshot({ path: shotPath("fullbooking-2-datetime") });
+
+    await page.fill('input[placeholder="Juan Dela Cruz"]', clientName);
+    await page.fill('input[type="tel"]', "0917 000 1111");
+    await page.click("text=Continue");
+
+    await page.click("text=GCash");
+    await page.setInputFiles('input[type="file"]', proofPath);
+    await page.screenshot({ path: shotPath("fullbooking-3-payment") });
+
+    await page.click("text=Submit booking request");
+    await page.waitForSelector("text=Booking request sent");
+    await page.screenshot({ path: shotPath("fullbooking-4-confirmation") });
+
+    const refText = await page.locator("text=BNT-").first().textContent();
+    reference = refText?.trim() ?? null;
+
+    await page.goto(`${BASE}/dashboard/pending`, { waitUntil: "networkidle" });
+    await page.screenshot({ path: shotPath("fullbooking-5-pending-list") });
+    pendingCardVisible = await page.isVisible(`text=${clientName}`);
+  });
+
+  console.log(
+    JSON.stringify(
+      { scenario: "fullbooking", clientName, reference, pendingCardVisible, consoleErrors },
+      null,
+      2
+    )
+  );
+}
+
+const scenarios = { smoke: scenarioSmoke, walkin: scenarioWalkin, fullbooking: scenarioFullBooking };
 const run = scenarios[scenario];
 if (!run) {
   console.error(`Unknown scenario "${scenario}". Available: ${Object.keys(scenarios).join(", ")}`);
