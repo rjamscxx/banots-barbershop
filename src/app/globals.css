@@ -7,6 +7,7 @@
   --brand-gold: #c9a04a;
   --brand-gold-pressed: #ad8638;
   --surface-gray: #f6f6f7;
+  --surface-paper: #faf7f1;
   --divider: #e4e4e7;
 }
 
@@ -17,12 +18,50 @@
   --color-brand-gold: var(--brand-gold);
   --color-brand-gold-pressed: var(--brand-gold-pressed);
   --color-surface-gray: var(--surface-gray);
+  --color-surface-paper: var(--surface-paper);
   --color-divider: var(--divider);
   --font-sans: var(--font-inter);
+  --font-display: var(--font-fraunces);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+}
+
+/* Barber-pole sweep — signature hover for the primary booking CTA */
+.barber-cta {
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--brand-gold) 0 14px,
+    var(--brand-gold-pressed) 14px 28px
+  );
+  background-size: 200% 200%;
+  background-position: 0% 0%;
+  transition: background-position 0.6s ease;
+}
+
+.barber-cta:hover,
+.barber-cta:focus-visible {
+  background-position: 100% 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .barber-cta {
+    transition: none;
+  }
+}
+
+/* Faint diagonal stripe texture — ambient nod to the barber pole, hero background only */
+.hero-texture {
+  background-image: repeating-linear-gradient(
+    45deg,
+    color-mix(in srgb, var(--brand-gold) 14%, transparent) 0 2px,
+    transparent 2px 18px
+  );
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
 }
