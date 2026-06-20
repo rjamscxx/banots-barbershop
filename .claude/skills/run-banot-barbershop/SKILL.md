@@ -59,6 +59,7 @@ node .claude/skills/run-banot-barbershop/driver.mjs smoke
 node .claude/skills/run-banot-barbershop/driver.mjs walkin
 node .claude/skills/run-banot-barbershop/driver.mjs fullbooking
 node .claude/skills/run-banot-barbershop/driver.mjs completebooking
+node .claude/skills/run-banot-barbershop/driver.mjs responsive
 ```
 
 Screenshots land in `.claude/skills/run-banot-barbershop/screenshots/`.
@@ -71,6 +72,7 @@ assertions) and any browser console errors.
 | `walkin` | Drives the full "Add walk-in" flow from `/dashboard`: fills client name/phone, picks a service + time, submits, and asserts the new booking appears on Today's view with the "Walk-in" marker |
 | `fullbooking` | Drives the full public `/book` flow (service → date/time → details → payment + fake proof upload → submit), then checks `/dashboard/pending` for the new request — proves the public booking page and dashboard are wired to the same store, not two disconnected mocks |
 | `completebooking` | Creates a walk-in for today, opens its booking detail page (`/dashboard/bookings/[id]`), clicks "Mark Completed", and asserts it disappears from Today's view and the client's visit history shows it as completed — exercises the `lastVisitDate` update that feeds the "due for rebooking" badge |
+| `responsive` | Screenshots `/`, `/book`, `/dashboard`, `/dashboard/clients` at 4 viewport widths (360, 414, 768, 1440px) — no assertions, just produces screenshots to eyeball for layout breakage |
 
 All scenarios create real rows in `dev.db`. Test client names are
 prefixed (`Test Client `, `Online Client `, `Complete Test `) so
@@ -104,6 +106,14 @@ closest thing to an integration test right now.
 
 ## Gotchas
 
+- **An `absolute`-positioned badge next to flexbox-centered text breaks
+  at narrow viewports.** `DashboardNav`'s pending-count badge used
+  `absolute right-6` relative to the tab's flex cell — on a 4-column
+  nav at 360px width, that fixed offset overlapped the centered label
+  text ("Pending" rendered as "Pend" with the badge on top). Fixed by
+  putting the label and badge in the same inline flex row instead of
+  absolutely positioning the badge — caught by the `responsive`
+  scenario, invisible at the default 414px test viewport.
 - **Seed/demo bookings are dated to whatever day they were seeded on**
   (e.g. `2026-06-19`). Once real calendar time moves past that date,
   `/dashboard`'s Today view legitimately shows "No confirmed bookings

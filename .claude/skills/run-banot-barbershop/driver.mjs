@@ -21,9 +21,9 @@ function shotPath(name) {
   return path.join(SHOT_DIR, `${name}.png`);
 }
 
-async function withBrowser(fn) {
+async function withBrowser(fn, viewport = { width: 414, height: 896 }) {
   const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: 414, height: 896 } });
+  const page = await browser.newPage({ viewport });
   const consoleErrors = [];
   page.on("console", (msg) => {
     if (msg.type() === "error") consoleErrors.push(msg.text());
@@ -190,11 +190,42 @@ async function scenarioCompleteBooking() {
   );
 }
 
+async function scenarioResponsive() {
+  const viewports = [
+    { name: "small-phone", width: 360, height: 740 },
+    { name: "phone", width: 414, height: 896 },
+    { name: "tablet", width: 768, height: 1024 },
+    { name: "desktop", width: 1440, height: 900 },
+  ];
+  const routes = ["/", "/book", "/dashboard", "/dashboard/clients"];
+  const results = [];
+
+  for (const vp of viewports) {
+    const consoleErrors = await withBrowser(
+      async (page) => {
+        for (const route of routes) {
+          const res = await page.goto(`${BASE}${route}`, { waitUntil: "networkidle" });
+          const name = `responsive-${vp.name}-${route === "/" ? "home" : route.slice(1).replace(/\//g, "-")}`;
+          await page.screenshot({ path: shotPath(name) });
+          results.push({ viewport: vp.name, route, status: res?.status() ?? null });
+        }
+      },
+      { width: vp.width, height: vp.height }
+    );
+    if (consoleErrors.length > 0) {
+      results.push({ viewport: vp.name, consoleErrors });
+    }
+  }
+
+  console.log(JSON.stringify({ scenario: "responsive", results }, null, 2));
+}
+
 const scenarios = {
   smoke: scenarioSmoke,
   walkin: scenarioWalkin,
   fullbooking: scenarioFullBooking,
   completebooking: scenarioCompleteBooking,
+  responsive: scenarioResponsive,
 };
 const run = scenarios[scenario];
 if (!run) {

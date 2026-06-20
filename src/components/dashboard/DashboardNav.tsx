@@ -22,14 +22,16 @@ export function DashboardNav({ pendingCount }: { pendingCount: number }) {
           <Link
             key={tab.href}
             href={tab.href}
-            className="relative flex flex-1 flex-col items-center gap-1 py-3 text-xs font-semibold"
+            className="flex flex-1 flex-col items-center gap-1 py-3 text-xs font-semibold"
           >
-            <span className={isActive ? "text-brand-black" : "text-zinc-400"}>{tab.label}</span>
-            {tab.href === "/dashboard/pending" && pendingCount > 0 ? (
-              <span className="absolute right-6 top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-gold px-1 text-[10px] font-bold text-brand-black">
-                {pendingCount}
-              </span>
-            ) : null}
+            <span className="flex items-center gap-1.5">
+              <span className={isActive ? "text-brand-black" : "text-zinc-400"}>{tab.label}</span>
+              {tab.href === "/dashboard/pending" && pendingCount > 0 ? (
+                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-gold px-1 text-[10px] font-bold text-brand-black">
+                  {pendingCount}
+                </span>
+              ) : null}
+            </span>
           </Link>
         );
       })}
