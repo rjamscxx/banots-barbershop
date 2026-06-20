@@ -139,3 +139,18 @@ export async function getBookingsByClient(clientId: string) {
   const rows = await prisma.booking.findMany({ where: { clientId } });
   return rows.map(mapBooking);
 }
+
+export async function markBookingCompleted(id: string) {
+  const [booking] = await prisma.$transaction(async (tx) => {
+    const updated = await tx.booking.update({ where: { id }, data: { status: "completed" } });
+    const client = await tx.client.findUnique({ where: { id: updated.clientId } });
+    if (!client || !client.lastVisitDate || client.lastVisitDate < updated.date) {
+      await tx.client.update({
+        where: { id: updated.clientId },
+        data: { lastVisitDate: updated.date },
+      });
+    }
+    return [updated];
+  });
+  return mapBooking(booking);
+}

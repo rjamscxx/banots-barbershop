@@ -22,7 +22,9 @@ export default async function DashboardTodayPage() {
         {bookings.length === 0 ? (
           <p className="mt-8 text-center text-sm text-zinc-400">No confirmed bookings today.</p>
         ) : (
-          bookings.map((booking) => <BookingCard key={booking.id} booking={booking} />)
+          bookings.map((booking) => (
+            <BookingCard key={booking.id} booking={booking} href={`/dashboard/bookings/${booking.id}`} />
+          ))
         )}
       </div>
 

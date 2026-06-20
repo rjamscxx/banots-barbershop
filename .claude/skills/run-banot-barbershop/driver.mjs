@@ -149,7 +149,53 @@ async function scenarioFullBooking() {
   );
 }
 
-const scenarios = { smoke: scenarioSmoke, walkin: scenarioWalkin, fullbooking: scenarioFullBooking };
+async function scenarioCompleteBooking() {
+  const clientName = `Complete Test ${Date.now()}`;
+  let bookingGoneFromToday = false;
+  let clientShowsCompletedVisit = false;
+
+  const consoleErrors = await withBrowser(async (page) => {
+    // create a walk-in for today so there's a confirmed booking to complete
+    await page.goto(`${BASE}/dashboard/walk-in`, { waitUntil: "networkidle" });
+    await page.fill('input[name="name"]', clientName);
+    await page.fill('input[name="phone"]', "0900 111 2222");
+    await page.selectOption('select[name="service"]', { value: "Haircut" });
+    await page.click("text=Confirm walk-in");
+    await page.waitForURL(`${BASE}/dashboard`);
+    await page.waitForSelector(`text=${clientName}`);
+    await page.screenshot({ path: shotPath("completebooking-1-today-before") });
+
+    await page.click(`text=${clientName}`);
+    await page.waitForSelector("text=Mark Completed");
+    await page.screenshot({ path: shotPath("completebooking-2-detail") });
+
+    await page.click("text=Mark Completed");
+    await page.waitForURL(`${BASE}/dashboard`);
+    await page.screenshot({ path: shotPath("completebooking-3-today-after") });
+    bookingGoneFromToday = !(await page.isVisible(`text=${clientName}`));
+
+    await page.goto(`${BASE}/dashboard/clients`, { waitUntil: "networkidle" });
+    await page.click(`text=${clientName}`);
+    await page.waitForSelector("text=Visit history");
+    await page.screenshot({ path: shotPath("completebooking-4-client-detail") });
+    clientShowsCompletedVisit = await page.isVisible("text=completed");
+  });
+
+  console.log(
+    JSON.stringify(
+      { scenario: "completebooking", clientName, bookingGoneFromToday, clientShowsCompletedVisit, consoleErrors },
+      null,
+      2
+    )
+  );
+}
+
+const scenarios = {
+  smoke: scenarioSmoke,
+  walkin: scenarioWalkin,
+  fullbooking: scenarioFullBooking,
+  completebooking: scenarioCompleteBooking,
+};
 const run = scenarios[scenario];
 if (!run) {
   console.error(`Unknown scenario "${scenario}". Available: ${Object.keys(scenarios).join(", ")}`);

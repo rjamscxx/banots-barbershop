@@ -58,3 +58,16 @@ export const SHOP_SETTINGS = {
 export function formatPeso(amount: number) {
   return `₱${amount.toLocaleString("en-PH")}`;
 }
+
+export const REBOOKING_REMINDER_DAYS = 21;
+
+export function daysSince(dateIso: string, today: Date = new Date()) {
+  const then = new Date(`${dateIso}T00:00:00`);
+  const diffMs = today.getTime() - then.getTime();
+  return Math.floor(diffMs / (1000 * 60 * 60 * 24));
+}
+
+export function isDueForRebooking(lastVisitDate: string | null, today: Date = new Date()) {
+  if (!lastVisitDate) return false;
+  return daysSince(lastVisitDate, today) >= REBOOKING_REMINDER_DAYS;
+}

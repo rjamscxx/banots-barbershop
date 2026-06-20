@@ -58,6 +58,7 @@ timeout 60 bash -c 'until curl -sf http://localhost:3050 >/dev/null; do sleep 1;
 node .claude/skills/run-banot-barbershop/driver.mjs smoke
 node .claude/skills/run-banot-barbershop/driver.mjs walkin
 node .claude/skills/run-banot-barbershop/driver.mjs fullbooking
+node .claude/skills/run-banot-barbershop/driver.mjs completebooking
 ```
 
 Screenshots land in `.claude/skills/run-banot-barbershop/screenshots/`.
@@ -69,6 +70,11 @@ assertions) and any browser console errors.
 | `smoke` | Visits `/`, `/book`, `/dashboard`, `/dashboard/pending`, `/dashboard/clients`, `/dashboard/settings`, `/dashboard/walk-in`, `/dashboard/login`; screenshots each; reports HTTP status + console errors per route |
 | `walkin` | Drives the full "Add walk-in" flow from `/dashboard`: fills client name/phone, picks a service + time, submits, and asserts the new booking appears on Today's view with the "Walk-in" marker |
 | `fullbooking` | Drives the full public `/book` flow (service → date/time → details → payment + fake proof upload → submit), then checks `/dashboard/pending` for the new request — proves the public booking page and dashboard are wired to the same store, not two disconnected mocks |
+| `completebooking` | Creates a walk-in for today, opens its booking detail page (`/dashboard/bookings/[id]`), clicks "Mark Completed", and asserts it disappears from Today's view and the client's visit history shows it as completed — exercises the `lastVisitDate` update that feeds the "due for rebooking" badge |
+
+All scenarios create real rows in `dev.db`. Test client names are
+prefixed (`Test Client `, `Online Client `, `Complete Test `) so
+they're easy to clean up afterward — see Gotchas.
 
 The driver reads `BASE_URL` env var or a second CLI arg if you used a
 different port: `node driver.mjs smoke http://localhost:3050`.
@@ -98,6 +104,21 @@ closest thing to an integration test right now.
 
 ## Gotchas
 
+- **Seed/demo bookings are dated to whatever day they were seeded on**
+  (e.g. `2026-06-19`). Once real calendar time moves past that date,
+  `/dashboard`'s Today view legitimately shows "No confirmed bookings
+  today" for them — that's correct filtering, not a bug. To test
+  Today-view features, create a fresh walk-in (defaults its date to
+  the actual current day) rather than relying on seed data.
+- **Don't run `prisma migrate reset` to clean up test data.** Prisma
+  itself blocks this for AI agents without explicit user consent
+  (it's a full destructive wipe). Instead delete just the rows the
+  driver created — all scenarios prefix test client names
+  (`Test Client `, `Online Client `, `Complete Test `), so a targeted
+  `prisma.client.deleteMany({ where: { name: { startsWith: ... } } })`
+  (cascade-delete their bookings first) cleans up without touching
+  seed data. There's no standing script for this — write one
+  ad hoc in `prisma/` and delete it after running.
 - **First boot after killing a previous dev server can take well over
   30s wall-clock**, even though Next.js itself logs "Ready in ~650ms" —
   that figure is internal bootstrap time, not the time from when you
