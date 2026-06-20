@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CLIENTS } from "@/lib/dashboard-data";
+import { getClients } from "@/lib/dashboard-data";
 
 function sortByDueDate(a: { lastVisitDate: string | null }, b: { lastVisitDate: string | null }) {
   if (!a.lastVisitDate && !b.lastVisitDate) return 0;
@@ -8,8 +8,8 @@ function sortByDueDate(a: { lastVisitDate: string | null }, b: { lastVisitDate: 
   return a.lastVisitDate.localeCompare(b.lastVisitDate);
 }
 
-export default function ClientsPage() {
-  const clients = [...CLIENTS].sort(sortByDueDate);
+export default async function ClientsPage() {
+  const clients = (await getClients()).sort(sortByDueDate);
 
   return (
     <div className="flex flex-1 flex-col px-6 py-6">

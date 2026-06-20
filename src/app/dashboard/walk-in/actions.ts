@@ -18,11 +18,11 @@ export async function createWalkIn(formData: FormData) {
     const name = String(formData.get("name") ?? "").trim();
     const phone = String(formData.get("phone") ?? "").trim();
     if (!name || !phone) return;
-    const client = addClient({ name, phone });
+    const client = await addClient({ name, phone });
     clientId = client.id;
   }
 
-  addWalkInBooking({ clientId, service, date, time });
+  await addWalkInBooking({ clientId, service, date, time });
 
   revalidatePath("/dashboard");
   redirect("/dashboard");

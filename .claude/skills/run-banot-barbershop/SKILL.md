@@ -3,9 +3,12 @@ name: run-banot-barbershop
 description: Build, run, and drive Banot's Barbershop (Next.js booking app). Use when asked to start the app, run it in a browser, take a screenshot of its UI, smoke-test the routes, test the walk-in booking flow, or test the public online booking flow end-to-end into the dashboard.
 ---
 
-This is a Next.js 16 (App Router, Turbopack) app with no backend yet —
-all data is in-memory mock data in `src/lib/*-data.ts`. It's driven
-with a Playwright script at
+This is a Next.js 16 (App Router, Turbopack) app backed by SQLite via
+Prisma (`prisma/schema.prisma`, data access in `src/lib/dashboard-data.ts`).
+Client-safe types/constants that get imported by client components
+live in `src/lib/dashboard-shared.ts` instead — keep DB-importing code
+out of that file or the client bundle breaks (see Gotchas). It's
+driven with a Playwright script at
 `.claude/skills/run-banot-barbershop/driver.mjs` (Playwright is a
 project devDependency already installed).
 
@@ -22,9 +25,15 @@ launches Chromium headless.
 ## Setup
 
 ```bash
-npm install
-npx playwright install chromium   # one-time browser binary download
+npm install                        # also runs `prisma generate` via postinstall
+cp .env.example .env                # sets DATABASE_URL="file:./dev.db"
+npm run db:migrate                  # creates dev.db from prisma/migrations
+npm run db:seed                     # seeds the 4 demo clients/bookings
+npx playwright install chromium     # one-time browser binary download
 ```
+
+`dev.db` is gitignored — every fresh clone starts from an empty
+database until you run the two `db:*` commands above.
 
 ## Build
 
@@ -113,6 +122,20 @@ closest thing to an integration test right now.
   badge count was stale this way until fixed — compute counts in a
   server component (e.g. the layout) and pass them down as props
   instead of calling data functions directly inside client components.
+- **After moving to Prisma + `better-sqlite3`, any client component
+  importing from `dashboard-data.ts` breaks the build** — Turbopack
+  tries to bundle `better-sqlite3`'s native bindings (`fs`, `node:module`)
+  into the browser chunk and fails with `Module not found: Can't
+  resolve 'fs'`. Fix: keep client-safe types/constants in
+  `src/lib/dashboard-shared.ts` (no Prisma import) and have client
+  components (e.g. `WalkInForm.tsx`) import from there, never from
+  `dashboard-data.ts` directly.
+- **Prisma 7's new `prisma-client` generator requires a driver
+  adapter** — `new PrismaClient()` with no args throws
+  `PrismaClientInitializationError`. For SQLite, install
+  `@prisma/adapter-better-sqlite3` and pass `new PrismaClient({ adapter })`.
+  Also note the export is `PrismaBetterSqlite3` (lowercase "ql"), not
+  `PrismaBetterSQLite3`.
 - **`npx playwright install chromium` silently no-ops with just a
   warning banner** if Playwright isn't a listed dependency of the
   current directory's `package.json` yet — install it as a real

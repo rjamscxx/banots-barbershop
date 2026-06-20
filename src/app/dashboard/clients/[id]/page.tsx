@@ -7,10 +7,10 @@ export default async function ClientDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const client = getClientById(id);
+  const client = await getClientById(id);
   if (!client) notFound();
 
-  const bookings = [...getBookingsByClient(id)].sort((a, b) => b.date.localeCompare(a.date));
+  const bookings = (await getBookingsByClient(id)).sort((a, b) => b.date.localeCompare(a.date));
 
   return (
     <div className="flex flex-1 flex-col px-6 py-6">

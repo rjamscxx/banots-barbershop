@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { TIME_SLOTS } from "@/lib/booking-data";
-import { SHOP_SETTINGS, formatPeso, type Client } from "@/lib/dashboard-data";
+import { SHOP_SETTINGS, formatPeso, type Client } from "@/lib/dashboard-shared";
 import { createWalkIn } from "@/app/dashboard/walk-in/actions";
 
 export function WalkInForm({ clients }: { clients: Client[] }) {

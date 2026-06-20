@@ -1,8 +1,8 @@
 import { getBookingsByStatus } from "@/lib/dashboard-data";
 import { BookingCard } from "@/components/dashboard/BookingCard";
 
-export default function PendingRequestsPage() {
-  const bookings = getBookingsByStatus("pending_verification");
+export default async function PendingRequestsPage() {
+  const bookings = await getBookingsByStatus("pending_verification");
 
   return (
     <div className="flex flex-1 flex-col px-6 py-6">

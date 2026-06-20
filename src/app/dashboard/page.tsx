@@ -6,9 +6,9 @@ function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
 
-export default function DashboardTodayPage() {
+export default async function DashboardTodayPage() {
   const today = todayIso();
-  const bookings = getBookingsByDate(today);
+  const bookings = await getBookingsByDate(today);
 
   return (
     <div className="flex flex-1 flex-col px-6 py-6">

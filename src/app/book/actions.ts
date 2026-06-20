@@ -20,14 +20,14 @@ type SubmitBookingInput = {
 };
 
 export async function submitBooking(input: SubmitBookingInput) {
-  if (isSlotTaken(input.date, input.time)) {
+  if (await isSlotTaken(input.date, input.time)) {
     return { ok: false as const, error: "That time slot was just taken. Please pick another." };
   }
 
-  const client = findOrCreateClient({ name: input.clientName, phone: input.clientPhone });
+  const client = await findOrCreateClient({ name: input.clientName, phone: input.clientPhone });
   const reference = generateBookingReference();
 
-  const booking = addOnlineBooking({
+  const booking = await addOnlineBooking({
     clientId: client.id,
     service: input.service,
     date: input.date,

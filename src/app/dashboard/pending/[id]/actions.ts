@@ -5,14 +5,14 @@ import { redirect } from "next/navigation";
 import { updateBookingStatus } from "@/lib/dashboard-data";
 
 export async function approveBooking(id: string) {
-  updateBookingStatus(id, "confirmed");
+  await updateBookingStatus(id, "confirmed");
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/pending");
   redirect("/dashboard/pending");
 }
 
 export async function rejectBooking(id: string) {
-  updateBookingStatus(id, "rejected");
+  await updateBookingStatus(id, "rejected");
   revalidatePath("/dashboard/pending");
   redirect("/dashboard/pending");
 }

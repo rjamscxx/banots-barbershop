@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { formatPeso, getClientById, type Booking } from "@/lib/dashboard-data";
 
-export function BookingCard({ booking, href }: { booking: Booking; href?: string }) {
-  const client = getClientById(booking.clientId);
+export async function BookingCard({ booking, href }: { booking: Booking; href?: string }) {
+  const client = await getClientById(booking.clientId);
   const content = (
     <div className="flex items-center justify-between rounded-xl border border-divider px-4 py-3">
       <div>

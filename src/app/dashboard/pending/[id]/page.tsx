@@ -8,10 +8,10 @@ export default async function BookingDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const booking = getBookingById(id);
+  const booking = await getBookingById(id);
   if (!booking) notFound();
 
-  const client = getClientById(booking.clientId);
+  const client = await getClientById(booking.clientId);
 
   return (
     <div className="flex flex-1 flex-col px-6 py-6">

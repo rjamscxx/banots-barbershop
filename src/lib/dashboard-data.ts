@@ -1,171 +1,109 @@
-export type BookingStatus =
-  | "pending_verification"
-  | "confirmed"
-  | "rejected"
-  | "completed"
-  | "no_show"
-  | "cancelled";
+import { prisma } from "./prisma";
+import type { Booking as BookingRow, Client as ClientRow } from "@/generated/prisma/client";
+import type { BookingStatus, BookingSource, BookingServiceSnapshot, Booking, Client } from "./dashboard-shared";
 
-export type BookingSource = "online" | "walk_in";
+export type { BookingStatus, BookingSource, BookingServiceSnapshot, Booking, Client };
+export { SHOP_SETTINGS, formatPeso } from "./dashboard-shared";
 
-export type BookingServiceSnapshot = {
-  name: string;
-  price: number;
-  durationMinutes: number;
-};
-
-export type Booking = {
-  id: string;
-  clientId: string;
-  service: BookingServiceSnapshot;
-  date: string;
-  time: string;
-  status: BookingStatus;
-  source: BookingSource;
-  proofImageUrl: string | null;
-  paymentMethod: string | null;
-  reference: string | null;
-  createdAt: string;
-};
-
-export type Client = {
-  id: string;
-  name: string;
-  phone: string;
-  lastVisitDate: string | null;
-  createdAt: string;
-};
-
-export const CLIENTS: Client[] = [
-  { id: "c1", name: "Mark Santos", phone: "0917 123 4567", lastVisitDate: "2026-05-29", createdAt: "2026-02-10" },
-  { id: "c2", name: "Paolo Reyes", phone: "0928 555 1212", lastVisitDate: "2026-06-05", createdAt: "2026-03-01" },
-  { id: "c3", name: "Carlo Tan", phone: "0939 222 8888", lastVisitDate: "2026-06-12", createdAt: "2026-01-22" },
-  { id: "c4", name: "Andrei Cruz", phone: "0915 777 3344", lastVisitDate: null, createdAt: "2026-06-18" },
-];
-
-export const BOOKINGS: Booking[] = [
-  {
-    id: "b1",
-    clientId: "c1",
-    service: { name: "Haircut", price: 150, durationMinutes: 30 },
-    date: "2026-06-19",
-    time: "10:00 AM",
-    status: "confirmed",
-    source: "online",
-    proofImageUrl: "proof-b1.jpg",
-    paymentMethod: "gcash",
-    reference: "BNT-100001",
-    createdAt: "2026-06-17",
-  },
-  {
-    id: "b2",
-    clientId: "c2",
-    service: { name: "Haircut + Shave", price: 230, durationMinutes: 45 },
-    date: "2026-06-19",
-    time: "11:00 AM",
-    status: "confirmed",
-    source: "walk_in",
-    proofImageUrl: null,
-    paymentMethod: null,
-    reference: null,
-    createdAt: "2026-06-19",
-  },
-  {
-    id: "b3",
-    clientId: "c3",
-    service: { name: "Shave", price: 100, durationMinutes: 20 },
-    date: "2026-06-19",
-    time: "2:30 PM",
-    status: "pending_verification",
-    source: "online",
-    proofImageUrl: "proof-b3.jpg",
-    paymentMethod: "maya",
-    reference: "BNT-100003",
-    createdAt: "2026-06-19",
-  },
-  {
-    id: "b4",
-    clientId: "c4",
-    service: { name: "Hot Towel Shave", price: 150, durationMinutes: 30 },
-    date: "2026-06-19",
-    time: "4:00 PM",
-    status: "pending_verification",
-    source: "online",
-    proofImageUrl: "proof-b4.jpg",
-    paymentMethod: "bdo",
-    reference: "BNT-100004",
-    createdAt: "2026-06-19",
-  },
-];
-
-export function getClientById(id: string) {
-  return CLIENTS.find((c) => c.id === id) ?? null;
+function mapBooking(row: BookingRow): Booking {
+  return {
+    id: row.id,
+    clientId: row.clientId,
+    service: {
+      name: row.serviceName,
+      price: row.servicePrice,
+      durationMinutes: row.serviceMinutes,
+    },
+    date: row.date,
+    time: row.time,
+    status: row.status as BookingStatus,
+    source: row.source as BookingSource,
+    proofImageUrl: row.proofImageUrl,
+    paymentMethod: row.paymentMethod,
+    reference: row.reference,
+    createdAt: row.createdAt.toISOString().slice(0, 10),
+  };
 }
 
-export function getBookingsByStatus(status: BookingStatus) {
-  return BOOKINGS.filter((b) => b.status === status);
+function mapClient(row: ClientRow): Client {
+  return {
+    id: row.id,
+    name: row.name,
+    phone: row.phone,
+    lastVisitDate: row.lastVisitDate,
+    createdAt: row.createdAt.toISOString().slice(0, 10),
+  };
 }
 
-export function getBookingById(id: string) {
-  return BOOKINGS.find((b) => b.id === id) ?? null;
+export async function getClients() {
+  const rows = await prisma.client.findMany();
+  return rows.map(mapClient);
 }
 
-export function updateBookingStatus(id: string, status: BookingStatus) {
-  const booking = getBookingById(id);
-  if (booking) booking.status = status;
-  return booking;
+export async function getClientById(id: string) {
+  const row = await prisma.client.findUnique({ where: { id } });
+  return row ? mapClient(row) : null;
 }
 
-export function addWalkInBooking(input: {
+export async function getBookingsByStatus(status: BookingStatus) {
+  const rows = await prisma.booking.findMany({ where: { status } });
+  return rows.map(mapBooking);
+}
+
+export async function getBookingById(id: string) {
+  const row = await prisma.booking.findUnique({ where: { id } });
+  return row ? mapBooking(row) : null;
+}
+
+export async function updateBookingStatus(id: string, status: BookingStatus) {
+  const row = await prisma.booking.update({ where: { id }, data: { status } });
+  return mapBooking(row);
+}
+
+export async function addWalkInBooking(input: {
   clientId: string;
   service: BookingServiceSnapshot;
   date: string;
   time: string;
 }) {
-  const booking: Booking = {
-    id: `b${BOOKINGS.length + 1}`,
-    clientId: input.clientId,
-    service: input.service,
-    date: input.date,
-    time: input.time,
-    status: "confirmed",
-    source: "walk_in",
-    proofImageUrl: null,
-    paymentMethod: null,
-    reference: null,
-    createdAt: new Date().toISOString().slice(0, 10),
-  };
-  BOOKINGS.push(booking);
-  return booking;
+  const row = await prisma.booking.create({
+    data: {
+      clientId: input.clientId,
+      serviceName: input.service.name,
+      servicePrice: input.service.price,
+      serviceMinutes: input.service.durationMinutes,
+      date: input.date,
+      time: input.time,
+      status: "confirmed",
+      source: "walk_in",
+    },
+  });
+  return mapBooking(row);
 }
 
-export function addClient(input: { name: string; phone: string }) {
-  const client: Client = {
-    id: `c${CLIENTS.length + 1}`,
-    name: input.name,
-    phone: input.phone,
-    lastVisitDate: null,
-    createdAt: new Date().toISOString().slice(0, 10),
-  };
-  CLIENTS.push(client);
-  return client;
+export async function addClient(input: { name: string; phone: string }) {
+  const row = await prisma.client.create({
+    data: { name: input.name.trim(), phone: input.phone.trim() },
+  });
+  return mapClient(row);
 }
 
-export function findOrCreateClient(input: { name: string; phone: string }) {
-  const existing = CLIENTS.find((c) => c.phone.trim() === input.phone.trim());
-  if (existing) return existing;
+export async function findOrCreateClient(input: { name: string; phone: string }) {
+  const existing = await prisma.client.findUnique({ where: { phone: input.phone.trim() } });
+  if (existing) return mapClient(existing);
   return addClient(input);
 }
 
 const ACTIVE_STATUSES: BookingStatus[] = ["pending_verification", "confirmed", "completed"];
 
-export function isSlotTaken(date: string, time: string) {
-  return BOOKINGS.some(
-    (b) => b.date === date && b.time === time && ACTIVE_STATUSES.includes(b.status)
-  );
+export async function isSlotTaken(date: string, time: string) {
+  const count = await prisma.booking.count({
+    where: { date, time, status: { in: ACTIVE_STATUSES } },
+  });
+  return count > 0;
 }
 
-export function addOnlineBooking(input: {
+export async function addOnlineBooking(input: {
   clientId: string;
   service: BookingServiceSnapshot;
   date: string;
@@ -174,47 +112,30 @@ export function addOnlineBooking(input: {
   paymentMethod: string;
   reference: string;
 }) {
-  const booking: Booking = {
-    id: `b${BOOKINGS.length + 1}`,
-    clientId: input.clientId,
-    service: input.service,
-    date: input.date,
-    time: input.time,
-    status: "pending_verification",
-    source: "online",
-    proofImageUrl: input.proofImageUrl,
-    paymentMethod: input.paymentMethod,
-    reference: input.reference,
-    createdAt: new Date().toISOString().slice(0, 10),
-  };
-  BOOKINGS.push(booking);
-  return booking;
+  const row = await prisma.booking.create({
+    data: {
+      clientId: input.clientId,
+      serviceName: input.service.name,
+      servicePrice: input.service.price,
+      serviceMinutes: input.service.durationMinutes,
+      date: input.date,
+      time: input.time,
+      status: "pending_verification",
+      source: "online",
+      proofImageUrl: input.proofImageUrl,
+      paymentMethod: input.paymentMethod,
+      reference: input.reference,
+    },
+  });
+  return mapBooking(row);
 }
 
-export function getBookingsByDate(date: string) {
-  return BOOKINGS.filter((b) => b.date === date && b.status === "confirmed");
+export async function getBookingsByDate(date: string) {
+  const rows = await prisma.booking.findMany({ where: { date, status: "confirmed" } });
+  return rows.map(mapBooking);
 }
 
-export function getBookingsByClient(clientId: string) {
-  return BOOKINGS.filter((b) => b.clientId === clientId);
-}
-
-export const SHOP_SETTINGS = {
-  shopName: "Banot's Barbershop",
-  address: "Unit 4, Banot's Building, Quezon City",
-  services: [
-    { name: "Haircut", price: 150, durationMinutes: 30 },
-    { name: "Shave", price: 100, durationMinutes: 20 },
-    { name: "Haircut + Shave", price: 230, durationMinutes: 45 },
-    { name: "Hot Towel Shave", price: 150, durationMinutes: 30 },
-  ],
-  workingHours: [
-    { day: "Mon-Sat", openTime: "9:00 AM", closeTime: "7:00 PM" },
-    { day: "Sun", openTime: "Closed", closeTime: "Closed" },
-  ],
-  paymentMethods: ["gcash", "gotyme", "maya", "bdo", "bpi"],
-};
-
-export function formatPeso(amount: number) {
-  return `₱${amount.toLocaleString("en-PH")}`;
+export async function getBookingsByClient(clientId: string) {
+  const rows = await prisma.booking.findMany({ where: { clientId } });
+  return rows.map(mapBooking);
 }
