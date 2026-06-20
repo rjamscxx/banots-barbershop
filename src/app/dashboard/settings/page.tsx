@@ -1,6 +1,27 @@
+import { readdir } from "fs/promises";
+import path from "path";
 import { SHOP_SETTINGS, formatPeso } from "@/lib/dashboard-data";
+import { PAYMENT_METHODS } from "@/lib/booking-data";
+import { QrUploader } from "@/components/dashboard/QrUploader";
 
-export default function SettingsPage() {
+async function getQrUrls(): Promise<Record<string, string>> {
+  try {
+    const dir = path.join(process.cwd(), "public", "qr");
+    const files = await readdir(dir);
+    const map: Record<string, string> = {};
+    for (const file of files) {
+      const name = file.replace(/\.[^.]+$/, "");
+      map[name] = `/qr/${file}`;
+    }
+    return map;
+  } catch {
+    return {};
+  }
+}
+
+export default async function SettingsPage() {
+  const qrUrls = await getQrUrls();
+
   return (
     <div className="flex flex-1 flex-col px-6 py-6">
       <h1 className="text-xl font-bold text-foreground">Settings</h1>
@@ -43,17 +64,17 @@ export default function SettingsPage() {
       </div>
 
       <p className="mt-6 text-sm font-semibold text-zinc-500">Payment QR codes</p>
-      <div className="mt-2 grid grid-cols-3 gap-2">
-        {SHOP_SETTINGS.paymentMethods.map((method) => (
-          <div
-            key={method}
-            className="flex flex-col items-center gap-1 rounded-xl border border-divider px-2 py-3"
-          >
-            <div className="flex h-16 w-16 items-center justify-center rounded-lg border border-divider bg-surface-gray text-[10px] text-zinc-400">
-              QR
-            </div>
-            <p className="text-xs font-semibold uppercase text-zinc-500">{method}</p>
-          </div>
+      <p className="mt-0.5 text-xs text-zinc-400">
+        Upload a screenshot of each QR code. Customers will scan these to pay.
+      </p>
+      <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-5">
+        {PAYMENT_METHODS.map((method) => (
+          <QrUploader
+            key={method.id}
+            methodId={method.id}
+            label={method.label}
+            initialUrl={qrUrls[method.id]}
+          />
         ))}
       </div>
     </div>

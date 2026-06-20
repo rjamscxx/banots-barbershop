@@ -9,7 +9,7 @@ export type BookingState = {
   clientName: string;
   clientPhone: string;
   paymentMethod: string | null;
-  proofFileName: string | null;
+  proofImageUrl: string | null;
   reference: string | null;
 };
 
@@ -20,6 +20,6 @@ export const INITIAL_BOOKING_STATE: BookingState = {
   clientName: "",
   clientPhone: "",
   paymentMethod: null,
-  proofFileName: null,
+  proofImageUrl: null,
   reference: null,
 };

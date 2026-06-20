@@ -64,9 +64,18 @@ export default async function BookingDetailPage({
       {booking.status === "pending_verification" ? (
         <>
           <p className="mt-6 text-sm font-semibold text-zinc-500">Proof of payment</p>
-          <div className="mt-2 flex h-56 w-full items-center justify-center rounded-xl border border-divider bg-surface-gray text-xs text-zinc-400">
-            [ {booking.proofImageUrl ?? "no image"} ]
-          </div>
+          {booking.proofImageUrl ? (
+            <img
+              src={booking.proofImageUrl}
+              alt="Payment proof"
+              className="mt-2 w-full rounded-xl border border-divider object-contain"
+              style={{ maxHeight: "320px" }}
+            />
+          ) : (
+            <div className="mt-2 flex h-40 w-full items-center justify-center rounded-xl border border-divider bg-surface-gray text-xs text-zinc-400">
+              No image uploaded
+            </div>
+          )}
         </>
       ) : null}
 

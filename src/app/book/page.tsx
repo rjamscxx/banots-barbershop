@@ -20,7 +20,7 @@ export default function BookPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   async function handleSubmitBooking() {
-    if (!booking.service || !booking.date || !booking.time || !booking.paymentMethod || !booking.proofFileName) {
+    if (!booking.service || !booking.date || !booking.time || !booking.paymentMethod || !booking.proofImageUrl) {
       return;
     }
     setIsSubmitting(true);
@@ -33,7 +33,7 @@ export default function BookPage() {
       clientName: booking.clientName,
       clientPhone: booking.clientPhone,
       paymentMethod: booking.paymentMethod,
-      proofFileName: booking.proofFileName,
+      proofImageUrl: booking.proofImageUrl,
     });
 
     setIsSubmitting(false);
@@ -93,14 +93,14 @@ export default function BookPage() {
           <PaymentStep
             service={booking.service}
             paymentMethod={booking.paymentMethod}
-            proofFileName={booking.proofFileName}
+            proofImageUrl={booking.proofImageUrl}
             error={submitError}
             isSubmitting={isSubmitting}
             onSelectMethod={(paymentMethod) => {
               setSubmitError(null);
               setBooking((b) => ({ ...b, paymentMethod }));
             }}
-            onUploadProof={(proofFileName) => setBooking((b) => ({ ...b, proofFileName }))}
+            onUploadProof={(proofImageUrl) => setBooking((b) => ({ ...b, proofImageUrl }))}
             onBack={goBack}
             onPickDifferentTime={() => {
               setSubmitError(null);

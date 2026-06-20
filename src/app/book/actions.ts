@@ -16,7 +16,7 @@ type SubmitBookingInput = {
   clientName: string;
   clientPhone: string;
   paymentMethod: string;
-  proofFileName: string;
+  proofImageUrl: string;
 };
 
 export async function submitBooking(input: SubmitBookingInput) {
@@ -32,7 +32,7 @@ export async function submitBooking(input: SubmitBookingInput) {
     service: input.service,
     date: input.date,
     time: input.time,
-    proofImageUrl: input.proofFileName,
+    proofImageUrl: input.proofImageUrl,
     paymentMethod: input.paymentMethod,
     reference,
   });
