@@ -4,6 +4,7 @@ import { getNextOpenSlotToday, getWeeklyBookingCount } from "@/lib/dashboard-dat
 export const dynamic = "force-dynamic";
 import { SHOP_SETTINGS, formatPeso } from "@/lib/dashboard-shared";
 import { Reveal } from "@/components/landing/Reveal";
+import { HeroVideo } from "@/components/landing/HeroVideo";
 
 export default async function Home() {
   const [nextSlot, weeklyCount] = await Promise.all([
@@ -30,23 +31,32 @@ export default async function Home() {
       </header>
 
       {/* ── Hero ────────────────────────────────────────── */}
-      <section className="bg-brand-black px-6 pb-24 pt-20 text-white sm:pb-32 sm:pt-28">
-        <div className="mx-auto max-w-3xl">
+      <section className="relative overflow-hidden bg-brand-black px-6 pb-28 pt-24 text-white sm:pb-40 sm:pt-36">
+        {/* Video background */}
+        <HeroVideo />
+
+        {/* Dark overlay — lets video breathe while keeping text legible */}
+        <div className="absolute inset-0 bg-black/65" />
+
+        {/* Subtle bottom fade to white (for smooth section transition) */}
+        <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-white/10 to-transparent" />
+
+        <div className="relative z-10 mx-auto max-w-3xl">
 
           {/* Thin gold rule */}
           <div className="hero-anim hero-anim-1 mb-6 h-px w-12 bg-brand-gold" />
 
-          <p className="hero-anim hero-anim-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+          <p className="hero-anim hero-anim-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-400">
             Independent Barber &middot; Quezon City
           </p>
 
           <h1 className="hero-anim hero-anim-2 mt-6 font-[family-name:var(--font-display)] text-5xl font-semibold leading-[1.0] tracking-tight sm:text-6xl lg:text-7xl">
             Skip the line.
             <br />
-            <span className="text-zinc-400">Walk in on time.</span>
+            <span className="text-zinc-300">Walk in on time.</span>
           </h1>
 
-          <p className="hero-anim hero-anim-3 mt-7 max-w-sm text-[15px] leading-relaxed text-zinc-400">
+          <p className="hero-anim hero-anim-3 mt-7 max-w-sm text-[15px] leading-relaxed text-zinc-300">
             Book a slot, pay ahead, and show up when your chair is waiting.
             No guessing. No queuing.
           </p>
@@ -56,12 +66,12 @@ export default async function Home() {
               Book a slot
             </Link>
             {nextSlot && (
-              <span className="text-xs text-zinc-500">
+              <span className="text-xs text-zinc-400">
                 Next open today &mdash; {nextSlot}
               </span>
             )}
             {!nextSlot && (
-              <span className="text-xs text-zinc-500">
+              <span className="text-xs text-zinc-400">
                 Fully booked today &mdash; book for tomorrow
               </span>
             )}
