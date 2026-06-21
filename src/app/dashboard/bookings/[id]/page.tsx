@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { formatPeso, getBookingById, getClientById } from "@/lib/dashboard-data";
+import { formatDate } from "@/lib/format";
 import { approveBooking, rejectBooking, completeBooking, markNoShow, cancelBooking } from "./actions";
 
 const STATUS_LABELS: Record<string, string> = {
@@ -21,10 +23,17 @@ export default async function BookingDetailPage({
   if (!booking) notFound();
 
   const client = await getClientById(booking.clientId);
+  const backHref = booking.status === "pending_verification" ? "/dashboard/pending" : "/dashboard";
 
   return (
     <div className="flex flex-1 flex-col px-6 py-6">
-      <h1 className="text-xl font-bold text-foreground">Booking</h1>
+      <div className="flex items-center gap-3">
+        <Link href={backHref} className="text-sm font-semibold text-zinc-500">
+          ← Back
+        </Link>
+      </div>
+
+      <h1 className="mt-3 text-xl font-bold text-foreground">Booking</h1>
       <p className="text-sm text-zinc-500">
         {STATUS_LABELS[booking.status] ?? booking.status}
         {booking.reference ? ` · Ref: ${booking.reference}` : ""}
@@ -44,10 +53,14 @@ export default async function BookingDetailPage({
           <span className="font-semibold text-foreground">{booking.service.name}</span>
         </div>
         <div className="mt-1 flex justify-between text-sm">
-          <span className="text-zinc-500">Time</span>
+          <span className="text-zinc-500">Date</span>
           <span className="font-semibold text-foreground">
-            {booking.date} &middot; {booking.time}
+            {formatDate(booking.date)}
           </span>
+        </div>
+        <div className="mt-1 flex justify-between text-sm">
+          <span className="text-zinc-500">Time</span>
+          <span className="font-semibold text-foreground">{booking.time}</span>
         </div>
         <div className="mt-1 flex justify-between text-sm">
           <span className="text-zinc-500">Amount</span>

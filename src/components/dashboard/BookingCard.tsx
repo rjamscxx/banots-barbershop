@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { formatPeso, getClientById, type Booking } from "@/lib/dashboard-data";
+import { formatDate } from "@/lib/format";
 
-export async function BookingCard({ booking, href }: { booking: Booking; href?: string }) {
+export async function BookingCard({ booking, href, showDate = false }: { booking: Booking; href?: string; showDate?: boolean }) {
   const client = await getClientById(booking.clientId);
   const content = (
     <div className="flex items-center justify-between rounded-xl border border-divider px-4 py-3">
@@ -15,7 +16,9 @@ export async function BookingCard({ booking, href }: { booking: Booking; href?: 
           ) : null}
         </div>
         <p className="text-sm text-zinc-500">
-          {booking.service.name} &middot; {booking.time}
+          {booking.service.name} &middot;{" "}
+          {showDate ? `${formatDate(booking.date)} · ` : ""}
+          {booking.time}
         </p>
       </div>
       <p className="font-bold text-foreground">{formatPeso(booking.service.price)}</p>

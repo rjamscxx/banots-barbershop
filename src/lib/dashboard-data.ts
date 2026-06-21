@@ -164,7 +164,9 @@ export async function getNextOpenSlotToday() {
 }
 
 export async function getTodayStats(date: string) {
-  const rows = await prisma.booking.findMany({ where: { date, status: "confirmed" } });
+  const rows = await prisma.booking.findMany({
+    where: { date, status: { in: ["confirmed", "completed"] } },
+  });
   const revenue = rows.reduce((sum, r) => sum + r.servicePrice, 0);
   return { count: rows.length, revenue };
 }

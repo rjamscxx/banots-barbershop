@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { formatPeso, getBookingsByClient, getClientById } from "@/lib/dashboard-data";
+import { formatDate } from "@/lib/format";
 
 export default async function ClientDetailPage({
   params,
@@ -30,7 +31,7 @@ export default async function ClientDetailPage({
               </div>
               <div className="mt-1 flex items-center justify-between text-sm text-zinc-500">
                 <span>
-                  {booking.date} &middot; {booking.time}
+                  {formatDate(booking.date)} &middot; {booking.time}
                 </span>
                 <span className="capitalize">{booking.status.replace("_", " ")}</span>
               </div>

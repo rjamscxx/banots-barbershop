@@ -3,6 +3,7 @@ import path from "path";
 import { SHOP_SETTINGS, formatPeso } from "@/lib/dashboard-data";
 import { PAYMENT_METHODS } from "@/lib/booking-data";
 import { QrUploader } from "@/components/dashboard/QrUploader";
+import { logoutAction } from "@/app/login/actions";
 
 async function getQrUrls(): Promise<Record<string, string>> {
   try {
@@ -76,6 +77,17 @@ export default async function SettingsPage() {
             initialUrl={qrUrls[method.id]}
           />
         ))}
+      </div>
+
+      <div className="mt-10">
+        <form action={logoutAction}>
+          <button
+            type="submit"
+            className="flex h-11 w-full items-center justify-center rounded-full border border-divider text-sm font-semibold text-zinc-500"
+          >
+            Log out
+          </button>
+        </form>
       </div>
     </div>
   );

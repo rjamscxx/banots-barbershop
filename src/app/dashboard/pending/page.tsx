@@ -14,7 +14,12 @@ export default async function PendingRequestsPage() {
           <p className="mt-8 text-center text-sm text-zinc-400">No pending requests.</p>
         ) : (
           bookings.map((booking) => (
-            <BookingCard key={booking.id} booking={booking} href={`/dashboard/bookings/${booking.id}`} />
+            <BookingCard
+              key={booking.id}
+              booking={booking}
+              href={`/dashboard/bookings/${booking.id}`}
+              showDate
+            />
           ))
         )}
       </div>
