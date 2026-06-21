@@ -30,25 +30,64 @@ body {
   font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
 }
 
-/* Primary booking CTA — clean solid gold, no gimmicks */
+/* Primary booking CTA */
 .btn-gold {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.375rem;
   background: var(--brand-gold);
   color: var(--brand-black);
   border-radius: 9999px;
   font-weight: 700;
-  transition: background 0.15s ease;
+  box-shadow: 0 2px 14px rgba(201, 160, 74, 0.28);
+  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
   white-space: nowrap;
 }
 .btn-gold:hover,
 .btn-gold:focus-visible {
   background: var(--brand-gold-pressed);
+  box-shadow: 0 4px 20px rgba(201, 160, 74, 0.42);
+  transform: translateY(-1px);
+}
+.btn-gold:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 8px rgba(201, 160, 74, 0.22);
+}
+
+/* Ghost CTA — for use on dark/video sections */
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: rgba(255, 255, 255, 0.8);
+  border-radius: 9999px;
+  font-weight: 600;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+}
+.btn-ghost:hover,
+.btn-ghost:focus-visible {
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
 }
 
 .tabular {
   font-variant-numeric: tabular-nums;
+}
+
+/* Cinematic film grain over hero video */
+.hero-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: 3;
 }
 
 /* Hero section — CSS-driven stagger (no JS dependency, no blank flash) */
