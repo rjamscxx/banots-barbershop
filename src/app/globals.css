@@ -65,3 +65,26 @@ body {
 .tabular {
   font-variant-numeric: tabular-nums;
 }
+
+/* Hero section — CSS-driven stagger (no JS dependency, no blank flash) */
+@keyframes hero-fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.hero-anim {
+  opacity: 0;
+  animation: hero-fade-up 0.5s ease-out forwards;
+}
+.hero-anim-1 { animation-delay: 0ms; }
+.hero-anim-2 { animation-delay: 110ms; }
+.hero-anim-3 { animation-delay: 210ms; }
+.hero-anim-4 { animation-delay: 330ms; }
+.hero-anim-5 { animation-delay: 460ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-anim {
+    opacity: 1;
+    animation: none;
+  }
+}

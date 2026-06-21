@@ -21,7 +21,7 @@ export function ServiceStep({ selected, onSelect, onNext }: ServiceStepProps) {
               onClick={() => onSelect(service)}
               className={`flex items-center justify-between rounded-xl border px-4 py-4 text-left transition-colors ${
                 isSelected
-                  ? "border-brand-gold bg-surface-gray"
+                  ? "border-brand-gold bg-brand-gold/8 ring-1 ring-brand-gold"
                   : "border-divider bg-white"
               }`}
             >
@@ -29,7 +29,14 @@ export function ServiceStep({ selected, onSelect, onNext }: ServiceStepProps) {
                 <p className="font-semibold text-foreground">{service.name}</p>
                 <p className="text-sm text-zinc-500">{service.durationMinutes} min</p>
               </div>
-              <p className="font-bold text-foreground">{formatPeso(service.price)}</p>
+              <div className="flex items-center gap-3">
+                <p className="font-bold text-foreground">{formatPeso(service.price)}</p>
+                {isSelected && (
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-gold text-xs font-bold text-brand-black">
+                    ✓
+                  </span>
+                )}
+              </div>
             </button>
           );
         })}

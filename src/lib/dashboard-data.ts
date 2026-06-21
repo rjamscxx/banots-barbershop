@@ -163,6 +163,23 @@ export async function getNextOpenSlotToday() {
   return null;
 }
 
+export async function getTodayStats(date: string) {
+  const rows = await prisma.booking.findMany({ where: { date, status: "confirmed" } });
+  const revenue = rows.reduce((sum, r) => sum + r.servicePrice, 0);
+  return { count: rows.length, revenue };
+}
+
+export async function getWeeklyBookingCount() {
+  const now = new Date();
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - now.getDay()); // back to Sunday
+  const start = startOfWeek.toISOString().slice(0, 10);
+  const end = now.toISOString().slice(0, 10);
+  return prisma.booking.count({
+    where: { date: { gte: start, lte: end }, status: { in: ["confirmed", "completed"] } },
+  });
+}
+
 export async function markBookingCompleted(id: string) {
   const [booking] = await prisma.$transaction(async (tx) => {
     const updated = await tx.booking.update({ where: { id }, data: { status: "completed" } });

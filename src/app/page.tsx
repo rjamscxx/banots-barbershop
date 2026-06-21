@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { getNextOpenSlotToday } from "@/lib/dashboard-data";
+import { getNextOpenSlotToday, getWeeklyBookingCount } from "@/lib/dashboard-data";
 
 export const dynamic = "force-dynamic";
 import { SHOP_SETTINGS, formatPeso } from "@/lib/dashboard-shared";
-import { HeroStagger, HeroItem } from "@/components/landing/Hero";
 import { Reveal } from "@/components/landing/Reveal";
 
 const STEPS = [
@@ -25,7 +24,10 @@ const STEPS = [
 ];
 
 export default async function Home() {
-  const nextSlot = await getNextOpenSlotToday();
+  const [nextSlot, weeklyCount] = await Promise.all([
+    getNextOpenSlotToday(),
+    getWeeklyBookingCount(),
+  ]);
 
   return (
     <main className="flex flex-1 flex-col bg-white">
@@ -42,48 +44,36 @@ export default async function Home() {
         </Link>
       </header>
 
-      {/* Hero */}
+      {/* Hero — CSS animation so content is visible even before JS hydrates */}
       <section className="hero-texture relative overflow-hidden bg-brand-black px-6 py-20 text-white">
-        <HeroStagger>
-          <div className="mx-auto flex max-w-3xl flex-col items-start">
-            <HeroItem>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-brand-gold">
-                Independent Barber &middot; Quezon City
-              </p>
-            </HeroItem>
+        <div className="mx-auto flex max-w-3xl flex-col items-start">
+          <p className="hero-anim hero-anim-1 text-xs font-bold uppercase tracking-[0.2em] text-brand-gold">
+            Independent Barber &middot; Quezon City
+          </p>
 
-            <HeroItem className="mt-4">
-              <h1 className="font-[family-name:var(--font-display)] text-4xl font-semibold leading-[1.1] sm:text-6xl">
-                Skip the wait.
-                <br />
-                Walk in to a guaranteed chair.
-              </h1>
-            </HeroItem>
+          <h1 className="hero-anim hero-anim-2 mt-4 font-[family-name:var(--font-display)] text-4xl font-semibold leading-[1.1] sm:text-6xl">
+            Skip the wait.
+            <br />
+            Walk in to a guaranteed chair.
+          </h1>
 
-            <HeroItem className="mt-5 max-w-lg">
-              <p className="text-base text-zinc-300 sm:text-lg">
-                Book your slot online, pay your way, and walk in exactly when your chair is
-                ready. No more guessing if there&apos;s a line.
-              </p>
-            </HeroItem>
+          <p className="hero-anim hero-anim-3 mt-5 max-w-lg text-base text-zinc-300 sm:text-lg">
+            Book your slot online, pay your way, and walk in exactly when your chair is
+            ready. No more guessing if there&apos;s a line.
+          </p>
 
-            <HeroItem className="mt-6">
-              <span className="tabular inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm text-zinc-200">
-                <span className="h-2 w-2 rounded-full bg-brand-gold" />
-                {nextSlot ? `Next open today — ${nextSlot}` : "Fully booked today — book for tomorrow"}
-              </span>
-            </HeroItem>
+          <span className="hero-anim hero-anim-4 tabular mt-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm text-zinc-200">
+            <span className="h-2 w-2 rounded-full bg-brand-gold" />
+            {nextSlot ? `Next open today — ${nextSlot}` : "Fully booked today — book for tomorrow"}
+          </span>
 
-            <HeroItem className="mt-8">
-              <Link
-                href="/book"
-                className="barber-cta flex h-14 w-fit items-center justify-center rounded-full px-8 text-base font-bold text-brand-black"
-              >
-                Book your slot
-              </Link>
-            </HeroItem>
-          </div>
-        </HeroStagger>
+          <Link
+            href="/book"
+            className="hero-anim hero-anim-5 barber-cta mt-8 flex h-14 w-fit items-center justify-center rounded-full px-8 text-base font-bold text-brand-black"
+          >
+            Book your slot
+          </Link>
+        </div>
       </section>
 
       {/* Services */}
@@ -142,7 +132,9 @@ export default async function Home() {
       {/* Trust strip */}
       <section className="px-6 py-12">
         <Reveal className="mx-auto flex max-w-3xl flex-col items-start gap-2 rounded-2xl border border-divider bg-surface-gray px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm font-semibold text-foreground">12 clients booked this week</p>
+          <p className="text-sm font-semibold text-foreground">
+            {weeklyCount > 0 ? `${weeklyCount} client${weeklyCount === 1 ? "" : "s"} booked this week` : "Open for bookings this week"}
+          </p>
           <p className="text-sm text-zinc-500">
             {SHOP_SETTINGS.workingHours[0].day} &middot; {SHOP_SETTINGS.workingHours[0].openTime}
             &ndash;{SHOP_SETTINGS.workingHours[0].closeTime} &middot; {SHOP_SETTINGS.address}
