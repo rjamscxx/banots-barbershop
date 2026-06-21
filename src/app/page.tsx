@@ -5,162 +5,179 @@ export const dynamic = "force-dynamic";
 import { SHOP_SETTINGS, formatPeso } from "@/lib/dashboard-shared";
 import { Reveal } from "@/components/landing/Reveal";
 
-const STEPS = [
-  {
-    number: "01",
-    title: "Pick your time",
-    body: "Choose a service and an open slot, right from your phone.",
-  },
-  {
-    number: "02",
-    title: "Pay your way",
-    body: "Scan your bank or e-wallet's QR — GCash, Maya, GoTyme, BDO, or BPI.",
-  },
-  {
-    number: "03",
-    title: "Walk in, no waiting",
-    body: "Show up at your time. Your chair is already yours.",
-  },
-];
-
 export default async function Home() {
   const [nextSlot, weeklyCount] = await Promise.all([
     getNextOpenSlotToday(),
     getWeeklyBookingCount(),
   ]);
 
+  const hours = SHOP_SETTINGS.workingHours[0];
+
   return (
     <main className="flex flex-1 flex-col bg-white">
-      {/* Nav */}
-      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-divider bg-white/90 px-6 py-4 backdrop-blur-sm">
-        <span className="font-[family-name:var(--font-display)] text-lg font-semibold text-foreground">
+
+      {/* ── Nav ─────────────────────────────────────────── */}
+      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-zinc-100 bg-white/90 px-6 py-4 backdrop-blur-sm">
+        <span className="font-[family-name:var(--font-display)] text-lg font-semibold tracking-tight text-foreground">
           Banot&apos;s
         </span>
         <Link
           href="/book"
-          className="rounded-full bg-brand-black px-4 py-2 text-sm font-bold text-white"
+          className="btn-gold h-9 px-5 text-xs"
         >
           Book Now
         </Link>
       </header>
 
-      {/* Hero — CSS animation so content is visible even before JS hydrates */}
-      <section className="hero-texture relative overflow-hidden bg-brand-black px-6 py-20 text-white">
-        <div className="mx-auto flex max-w-3xl flex-col items-start">
-          <p className="hero-anim hero-anim-1 text-xs font-bold uppercase tracking-[0.2em] text-brand-gold">
+      {/* ── Hero ────────────────────────────────────────── */}
+      <section className="bg-brand-black px-6 pb-24 pt-20 text-white sm:pb-32 sm:pt-28">
+        <div className="mx-auto max-w-3xl">
+
+          {/* Thin gold rule */}
+          <div className="hero-anim hero-anim-1 mb-6 h-px w-12 bg-brand-gold" />
+
+          <p className="hero-anim hero-anim-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
             Independent Barber &middot; Quezon City
           </p>
 
-          <h1 className="hero-anim hero-anim-2 mt-4 font-[family-name:var(--font-display)] text-4xl font-semibold leading-[1.1] sm:text-6xl">
-            Skip the wait.
+          <h1 className="hero-anim hero-anim-2 mt-6 font-[family-name:var(--font-display)] text-5xl font-semibold leading-[1.0] tracking-tight sm:text-6xl lg:text-7xl">
+            Skip the line.
             <br />
-            Walk in to a guaranteed chair.
+            <span className="text-zinc-400">Walk in on time.</span>
           </h1>
 
-          <p className="hero-anim hero-anim-3 mt-5 max-w-lg text-base text-zinc-300 sm:text-lg">
-            Book your slot online, pay your way, and walk in exactly when your chair is
-            ready. No more guessing if there&apos;s a line.
+          <p className="hero-anim hero-anim-3 mt-7 max-w-sm text-[15px] leading-relaxed text-zinc-400">
+            Book a slot, pay ahead, and show up when your chair is waiting.
+            No guessing. No queuing.
           </p>
 
-          <span className="hero-anim hero-anim-4 tabular mt-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm text-zinc-200">
-            <span className="h-2 w-2 rounded-full bg-brand-gold" />
-            {nextSlot ? `Next open today — ${nextSlot}` : "Fully booked today — book for tomorrow"}
-          </span>
+          <div className="hero-anim hero-anim-4 mt-10 flex flex-wrap items-center gap-5">
+            <Link href="/book" className="btn-gold h-12 px-8 text-sm">
+              Book a slot
+            </Link>
+            {nextSlot && (
+              <span className="text-xs text-zinc-500">
+                Next open today &mdash; {nextSlot}
+              </span>
+            )}
+            {!nextSlot && (
+              <span className="text-xs text-zinc-500">
+                Fully booked today &mdash; book for tomorrow
+              </span>
+            )}
+          </div>
 
-          <Link
-            href="/book"
-            className="hero-anim hero-anim-5 barber-cta mt-8 flex h-14 w-fit items-center justify-center rounded-full px-8 text-base font-bold text-brand-black"
-          >
-            Book your slot
-          </Link>
         </div>
       </section>
 
-      {/* Services */}
-      <section className="px-6 py-16">
+      {/* ── Services ────────────────────────────────────── */}
+      <section className="px-6 py-20">
         <div className="mx-auto max-w-3xl">
+
           <Reveal>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-brand-gold">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-400">
               Services &amp; Pricing
             </p>
-            <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl font-semibold text-foreground">
-              Choose your service
-            </h2>
           </Reveal>
 
-          <div className="mt-8 divide-y divide-divider border-t border-divider">
+          <div className="mt-8">
             {SHOP_SETTINGS.services.map((service, i) => (
-              <Reveal key={service.name} delay={i * 0.05}>
-                <div className="flex items-center justify-between py-4">
-                  <div>
-                    <p className="font-semibold text-foreground">{service.name}</p>
-                    <p className="text-sm text-zinc-500">{service.durationMinutes} min</p>
+              <Reveal key={service.name} delay={i * 0.06}>
+                <div className="flex items-center justify-between border-t border-zinc-100 py-5 last:border-b last:border-zinc-100">
+                  <div className="flex items-start gap-5">
+                    <span className="mt-0.5 w-5 shrink-0 text-xs tabular text-zinc-300">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <div>
+                      <p className="font-semibold text-foreground">{service.name}</p>
+                      <p className="mt-0.5 text-xs text-zinc-400">{service.durationMinutes} min</p>
+                    </div>
                   </div>
-                  <p className="tabular text-lg font-bold text-foreground">
+                  <p className="tabular text-base font-bold text-foreground">
                     {formatPeso(service.price)}
                   </p>
                 </div>
               </Reveal>
             ))}
           </div>
-        </div>
-      </section>
 
-      {/* How it works */}
-      <section className="bg-surface-paper px-6 py-16">
-        <div className="mx-auto max-w-3xl">
-          <Reveal>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-brand-gold">
-              How it works
-            </p>
+          <Reveal delay={0.25}>
+            <div className="mt-10">
+              <Link href="/book" className="btn-gold h-12 px-8 text-sm">
+                Book a slot
+              </Link>
+            </div>
           </Reveal>
 
-          <div className="mt-8 grid gap-8 sm:grid-cols-3">
-            {STEPS.map((step, i) => (
-              <Reveal key={step.number} delay={i * 0.1}>
-                <p className="font-[family-name:var(--font-display)] text-3xl font-semibold text-brand-gold">
-                  {step.number}
-                </p>
-                <h3 className="mt-2 font-semibold text-foreground">{step.title}</h3>
-                <p className="mt-1 text-sm text-zinc-600">{step.body}</p>
-              </Reveal>
-            ))}
-          </div>
         </div>
       </section>
 
-      {/* Trust strip */}
-      <section className="px-6 py-12">
-        <Reveal className="mx-auto flex max-w-3xl flex-col items-start gap-2 rounded-2xl border border-divider bg-surface-gray px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm font-semibold text-foreground">
-            {weeklyCount > 0 ? `${weeklyCount} client${weeklyCount === 1 ? "" : "s"} booked this week` : "Open for bookings this week"}
-          </p>
-          <p className="text-sm text-zinc-500">
-            {SHOP_SETTINGS.workingHours[0].day} &middot; {SHOP_SETTINGS.workingHours[0].openTime}
-            &ndash;{SHOP_SETTINGS.workingHours[0].closeTime} &middot; {SHOP_SETTINGS.address}
-          </p>
-        </Reveal>
+      {/* ── Brand statement ─────────────────────────────── */}
+      <section className="bg-surface-gray px-6 py-20">
+        <div className="mx-auto max-w-3xl">
+
+          <Reveal>
+            <h2 className="font-[family-name:var(--font-display)] text-3xl font-semibold leading-[1.15] text-foreground sm:text-4xl">
+              A guaranteed chair when you arrive.
+              <span className="text-zinc-400"> No surprise waits. Just your cut, on time.</span>
+            </h2>
+          </Reveal>
+
+          <Reveal delay={0.1}>
+            <div className="mt-12 grid grid-cols-3 gap-6 border-t border-zinc-200 pt-10">
+              <div>
+                <p className="tabular text-2xl font-bold text-foreground">30</p>
+                <p className="mt-1 text-xs text-zinc-500">min average service</p>
+              </div>
+              <div>
+                <p className="tabular text-2xl font-bold text-foreground">₱150</p>
+                <p className="mt-1 text-xs text-zinc-500">starting price</p>
+              </div>
+              <div>
+                <p className="tabular text-2xl font-bold text-foreground">
+                  {weeklyCount > 0 ? weeklyCount : "—"}
+                </p>
+                <p className="mt-1 text-xs text-zinc-500">clients this week</p>
+              </div>
+            </div>
+          </Reveal>
+
+        </div>
       </section>
 
-      {/* Closing CTA */}
-      <section className="bg-brand-black px-6 py-20 text-center text-white">
-        <Reveal className="mx-auto flex max-w-2xl flex-col items-center">
-          <h2 className="font-[family-name:var(--font-display)] text-3xl font-semibold sm:text-4xl">
-            Your next cut is one tap away.
+      {/* ── Closing CTA ─────────────────────────────────── */}
+      <section className="bg-brand-black px-6 pb-24 pt-20 text-white sm:pb-32 sm:pt-28">
+        <Reveal className="mx-auto max-w-3xl">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+            Ready?
+          </p>
+          <h2 className="mt-5 font-[family-name:var(--font-display)] text-4xl font-semibold leading-[1.05] sm:text-5xl">
+            One tap to your
+            <br />next cut.
           </h2>
-          <Link
-            href="/book"
-            className="barber-cta mt-8 flex h-14 w-fit items-center justify-center rounded-full px-8 text-base font-bold text-brand-black"
-          >
-            Book your slot
-          </Link>
+          <div className="mt-10">
+            <Link href="/book" className="btn-gold h-12 px-8 text-sm">
+              Book a slot
+            </Link>
+          </div>
+          <p className="mt-8 text-xs text-zinc-600">
+            {hours.day} &middot; {hours.openTime}–{hours.closeTime} &middot; {SHOP_SETTINGS.address}
+          </p>
         </Reveal>
       </section>
 
-      {/* Footer */}
-      <footer className="px-6 py-8 text-center text-xs text-zinc-400">
-        {SHOP_SETTINGS.shopName} &middot; {SHOP_SETTINGS.address}
+      {/* ── Footer ──────────────────────────────────────── */}
+      <footer className="border-t border-zinc-100 px-6 py-8">
+        <div className="mx-auto flex max-w-3xl flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+          <span className="font-[family-name:var(--font-display)] text-sm font-semibold text-foreground">
+            Banot&apos;s Barbershop
+          </span>
+          <p className="text-xs text-zinc-400">
+            {SHOP_SETTINGS.address} &middot; {hours.openTime}–{hours.closeTime}
+          </p>
+        </div>
       </footer>
+
     </main>
   );
 }
