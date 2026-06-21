@@ -17,38 +17,55 @@ export function DetailsStep({
   onBack,
   onNext,
 }: DetailsStepProps) {
+  const canContinue = name.trim().length > 1 && phone.trim().length > 6;
+
   return (
     <div className="flex flex-1 flex-col">
       <StepHeader title="Your details" step={3} totalSteps={5} onBack={onBack} />
 
-      <div className="flex flex-1 flex-col gap-4 px-6 py-6">
+      <div className="flex flex-1 flex-col gap-5 px-6 py-6">
+        <p className="text-sm text-zinc-500">
+          We&apos;ll use this to identify your booking. No spam — ever.
+        </p>
+
         <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-semibold text-zinc-500">Full name</span>
+          <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">
+            Full name
+          </span>
           <input
             value={name}
             onChange={(e) => onChangeName(e.target.value)}
             placeholder="Juan Dela Cruz"
-            className="h-12 rounded-xl border border-divider px-4 text-base text-foreground outline-none focus:border-brand-gold"
+            autoComplete="name"
+            className="h-12 rounded-xl border border-divider bg-white px-4 text-base text-foreground outline-none transition-colors placeholder:text-zinc-300 focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/10"
           />
         </label>
 
         <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-semibold text-zinc-500">Mobile number</span>
+          <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">
+            Mobile number
+          </span>
           <input
             value={phone}
             onChange={(e) => onChangePhone(e.target.value)}
             placeholder="09XX XXX XXXX"
             type="tel"
-            className="h-12 rounded-xl border border-divider px-4 text-base text-foreground outline-none focus:border-brand-gold"
+            inputMode="numeric"
+            autoComplete="tel"
+            className="h-12 rounded-xl border border-divider bg-white px-4 text-base text-foreground outline-none transition-colors placeholder:text-zinc-300 focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/10"
           />
         </label>
+
+        <p className="text-xs text-zinc-400">
+          Your number is used to look up your booking at the shop.
+        </p>
       </div>
 
       <div className="px-6 pb-8">
         <button
           onClick={onNext}
-          disabled={!name.trim() || !phone.trim()}
-          className="flex h-13 w-full items-center justify-center rounded-full bg-brand-gold px-5 text-base font-bold text-brand-black transition-colors hover:bg-brand-gold-pressed disabled:opacity-40"
+          disabled={!canContinue}
+          className="btn-gold h-12 w-full text-sm disabled:opacity-40 disabled:shadow-none disabled:translate-y-0"
         >
           Continue
         </button>

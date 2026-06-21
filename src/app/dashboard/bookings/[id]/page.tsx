@@ -3,14 +3,15 @@ import { notFound } from "next/navigation";
 import { formatPeso, getBookingById, getClientById } from "@/lib/dashboard-data";
 import { formatDate } from "@/lib/format";
 import { approveBooking, rejectBooking, completeBooking, markNoShow, cancelBooking } from "./actions";
+import type { BookingStatus } from "@/lib/dashboard-shared";
 
-const STATUS_LABELS: Record<string, string> = {
-  pending_verification: "Pending verification",
-  confirmed: "Confirmed",
-  rejected: "Rejected",
-  completed: "Completed",
-  no_show: "No-show",
-  cancelled: "Cancelled",
+const STATUS_CONFIG: Record<BookingStatus, { label: string; color: string }> = {
+  pending_verification: { label: "Pending verification", color: "bg-amber-100 text-amber-700" },
+  confirmed:            { label: "Confirmed",            color: "bg-green-100 text-green-700" },
+  rejected:             { label: "Rejected",             color: "bg-red-100 text-red-600" },
+  completed:            { label: "Completed",            color: "bg-zinc-100 text-zinc-600" },
+  no_show:              { label: "No-show",              color: "bg-zinc-100 text-zinc-600" },
+  cancelled:            { label: "Cancelled",            color: "bg-zinc-100 text-zinc-600" },
 };
 
 export default async function BookingDetailPage({
@@ -24,112 +25,117 @@ export default async function BookingDetailPage({
 
   const client = await getClientById(booking.clientId);
   const backHref = booking.status === "pending_verification" ? "/dashboard/pending" : "/dashboard";
+  const statusCfg = STATUS_CONFIG[booking.status as BookingStatus] ?? { label: booking.status, color: "bg-zinc-100 text-zinc-600" };
 
   return (
-    <div className="flex flex-1 flex-col px-6 py-6">
-      <div className="flex items-center gap-3">
-        <Link href={backHref} className="text-sm font-semibold text-zinc-500">
-          ← Back
+    <div className="flex flex-1 flex-col">
+
+      {/* Header */}
+      <div className="border-b border-divider px-6 pb-5 pt-6">
+        <Link href={backHref} className="flex items-center gap-1.5 text-xs font-semibold text-zinc-400 hover:text-foreground transition-colors">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M7.5 2L3.5 6L7.5 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Back
         </Link>
-      </div>
-
-      <h1 className="mt-3 text-xl font-bold text-foreground">Booking</h1>
-      <p className="text-sm text-zinc-500">
-        {STATUS_LABELS[booking.status] ?? booking.status}
-        {booking.reference ? ` · Ref: ${booking.reference}` : ""}
-      </p>
-
-      <div className="mt-4 rounded-xl border border-divider bg-surface-gray px-4 py-4">
-        <div className="flex justify-between text-sm">
-          <span className="text-zinc-500">Client</span>
-          <span className="font-semibold text-foreground">{client?.name}</span>
-        </div>
-        <div className="mt-1 flex justify-between text-sm">
-          <span className="text-zinc-500">Phone</span>
-          <span className="font-semibold text-foreground">{client?.phone}</span>
-        </div>
-        <div className="mt-1 flex justify-between text-sm">
-          <span className="text-zinc-500">Service</span>
-          <span className="font-semibold text-foreground">{booking.service.name}</span>
-        </div>
-        <div className="mt-1 flex justify-between text-sm">
-          <span className="text-zinc-500">Date</span>
-          <span className="font-semibold text-foreground">
-            {formatDate(booking.date)}
+        <div className="mt-3 flex items-center justify-between">
+          <h1 className="text-xl font-bold text-foreground">Booking</h1>
+          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusCfg.color}`}>
+            {statusCfg.label}
           </span>
         </div>
-        <div className="mt-1 flex justify-between text-sm">
-          <span className="text-zinc-500">Time</span>
-          <span className="font-semibold text-foreground">{booking.time}</span>
-        </div>
-        <div className="mt-1 flex justify-between text-sm">
-          <span className="text-zinc-500">Amount</span>
-          <span className="font-semibold text-foreground">{formatPeso(booking.service.price)}</span>
-        </div>
-        {booking.paymentMethod ? (
-          <div className="mt-1 flex justify-between text-sm">
-            <span className="text-zinc-500">Method</span>
-            <span className="font-semibold text-foreground">{booking.paymentMethod}</span>
-          </div>
+        {booking.reference ? (
+          <p className="mt-1 text-xs text-zinc-400">Ref: {booking.reference}</p>
         ) : null}
       </div>
 
-      {booking.status === "pending_verification" ? (
-        <>
-          <p className="mt-6 text-sm font-semibold text-zinc-500">Proof of payment</p>
-          {booking.proofImageUrl ? (
-            <img
-              src={booking.proofImageUrl}
-              alt="Payment proof"
-              className="mt-2 w-full rounded-xl border border-divider object-contain"
-              style={{ maxHeight: "320px" }}
-            />
-          ) : (
-            <div className="mt-2 flex h-40 w-full items-center justify-center rounded-xl border border-divider bg-surface-gray text-xs text-zinc-400">
-              No image uploaded
-            </div>
-          )}
-        </>
-      ) : null}
+      <div className="flex flex-1 flex-col px-6 py-5 gap-5">
 
-      <div className="flex-1" />
-
-      {booking.status === "pending_verification" ? (
-        <div className="mt-6 flex gap-3">
-          <form action={rejectBooking.bind(null, booking.id)} className="flex-1">
-            <button className="flex h-13 w-full items-center justify-center rounded-full border border-divider px-5 text-base font-bold text-foreground">
-              Reject
-            </button>
-          </form>
-          <form action={approveBooking.bind(null, booking.id)} className="flex-1">
-            <button className="flex h-13 w-full items-center justify-center rounded-full bg-brand-gold px-5 text-base font-bold text-brand-black">
-              Approve
-            </button>
-          </form>
+        {/* Client + booking info */}
+        <div className="rounded-2xl border border-divider overflow-hidden">
+          <div className="bg-surface-gray px-5 py-3">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">Client</p>
+            <p className="mt-0.5 font-semibold text-foreground">{client?.name}</p>
+            <p className="text-sm text-zinc-500">{client?.phone}</p>
+          </div>
+          <div className="divide-y divide-zinc-50">
+            {[
+              { label: "Service",   value: booking.service.name },
+              { label: "Date",      value: formatDate(booking.date) },
+              { label: "Time",      value: booking.time },
+              { label: "Amount",    value: formatPeso(booking.service.price) },
+              { label: "Payment",   value: booking.paymentMethod ?? null },
+            ].filter(r => r.value).map(({ label, value }) => (
+              <div key={label} className="flex justify-between px-5 py-3">
+                <span className="text-sm text-zinc-500">{label}</span>
+                <span className="text-sm font-semibold text-foreground">{value}</span>
+              </div>
+            ))}
+          </div>
         </div>
-      ) : null}
 
-      {booking.status === "confirmed" ? (
-        <div className="mt-6 flex flex-col gap-3">
-          <form action={completeBooking.bind(null, booking.id)}>
-            <button className="flex h-13 w-full items-center justify-center rounded-full bg-brand-gold px-5 text-base font-bold text-brand-black">
-              Mark Completed
-            </button>
-          </form>
+        {/* Proof of payment */}
+        {booking.status === "pending_verification" ? (
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400">
+              Proof of payment
+            </p>
+            {booking.proofImageUrl ? (
+              <img
+                src={booking.proofImageUrl}
+                alt="Payment proof"
+                className="mt-3 w-full rounded-2xl border border-divider object-contain"
+                style={{ maxHeight: "320px" }}
+              />
+            ) : (
+              <div className="mt-3 flex h-32 w-full items-center justify-center rounded-2xl border border-dashed border-zinc-200 text-xs text-zinc-400">
+                No image uploaded
+              </div>
+            )}
+          </div>
+        ) : null}
+
+        <div className="flex-1" />
+
+        {/* Actions */}
+        {booking.status === "pending_verification" ? (
           <div className="flex gap-3">
-            <form action={markNoShow.bind(null, booking.id)} className="flex-1">
-              <button className="flex h-13 w-full items-center justify-center rounded-full border border-divider px-5 text-base font-bold text-foreground">
-                No-show
+            <form action={rejectBooking.bind(null, booking.id)} className="flex-1">
+              <button className="flex h-12 w-full items-center justify-center rounded-full border border-divider text-sm font-bold text-foreground transition-colors hover:bg-zinc-50">
+                Reject
               </button>
             </form>
-            <form action={cancelBooking.bind(null, booking.id)} className="flex-1">
-              <button className="flex h-13 w-full items-center justify-center rounded-full border border-divider px-5 text-base font-bold text-foreground">
-                Cancel
+            <form action={approveBooking.bind(null, booking.id)} className="flex-1">
+              <button className="btn-gold h-12 w-full text-sm">
+                Approve
               </button>
             </form>
           </div>
-        </div>
-      ) : null}
+        ) : null}
+
+        {booking.status === "confirmed" ? (
+          <div className="flex flex-col gap-3">
+            <form action={completeBooking.bind(null, booking.id)}>
+              <button className="btn-gold h-12 w-full text-sm">
+                Mark completed
+              </button>
+            </form>
+            <div className="flex gap-3">
+              <form action={markNoShow.bind(null, booking.id)} className="flex-1">
+                <button className="flex h-12 w-full items-center justify-center rounded-full border border-divider text-sm font-bold text-foreground hover:bg-zinc-50">
+                  No-show
+                </button>
+              </form>
+              <form action={cancelBooking.bind(null, booking.id)} className="flex-1">
+                <button className="flex h-12 w-full items-center justify-center rounded-full border border-divider text-sm font-bold text-foreground hover:bg-zinc-50">
+                  Cancel
+                </button>
+              </form>
+            </div>
+          </div>
+        ) : null}
+
+      </div>
     </div>
   );
 }
