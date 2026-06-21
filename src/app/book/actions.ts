@@ -5,9 +5,17 @@ import {
   addOnlineBooking,
   findOrCreateClient,
   isSlotTaken,
+  getBookingsByDate,
   type BookingServiceSnapshot,
 } from "@/lib/dashboard-data";
 import { generateBookingReference } from "@/lib/booking-data";
+
+export async function getBookedSlotsForDate(date: string): Promise<string[]> {
+  const bookings = await getBookingsByDate(date);
+  return bookings
+    .filter((b) => b.status !== "rejected" && b.status !== "cancelled")
+    .map((b) => b.time as string);
+}
 
 type SubmitBookingInput = {
   service: BookingServiceSnapshot;

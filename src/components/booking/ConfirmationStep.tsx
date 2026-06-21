@@ -1,5 +1,6 @@
 import type { BookingState } from "./types";
 import { formatPeso } from "@/lib/booking-data";
+import { formatDate } from "@/lib/format";
 
 type ConfirmationStepProps = {
   booking: BookingState;
@@ -29,7 +30,9 @@ export function ConfirmationStep({ booking, onDone }: ConfirmationStepProps) {
         </div>
         <div className="mt-1 flex justify-between text-sm">
           <span className="text-zinc-500">Date</span>
-          <span className="font-semibold text-foreground">{booking.date}</span>
+          <span className="font-semibold text-foreground">
+            {booking.date ? formatDate(booking.date) : ""}
+          </span>
         </div>
         <div className="mt-1 flex justify-between text-sm">
           <span className="text-zinc-500">Time</span>

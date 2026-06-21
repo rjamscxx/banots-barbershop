@@ -1,13 +1,17 @@
-import { TIME_SLOTS, UNAVAILABLE_SLOTS } from "@/lib/booking-data";
+"use client";
+
+import { useEffect, useState } from "react";
+import { TIME_SLOTS } from "@/lib/booking-data";
+import { getBookedSlotsForDate } from "@/app/book/actions";
 import { StepHeader } from "./StepHeader";
 
-function nextDays(count: number) {
-  const days = [];
-  const today = new Date();
-  for (let i = 0; i < count; i++) {
-    const d = new Date(today);
-    d.setDate(today.getDate() + i);
-    days.push(d);
+function nextOpenDays(count: number) {
+  const days: Date[] = [];
+  const d = new Date();
+  while (days.length < count) {
+    // skip Sundays (day 0)
+    if (d.getDay() !== 0) days.push(new Date(d));
+    d.setDate(d.getDate() + 1);
   }
   return days;
 }
@@ -29,7 +33,18 @@ export function DateTimeStep({
   onBack,
   onNext,
 }: DateTimeStepProps) {
-  const days = nextDays(7);
+  const days = nextOpenDays(7);
+  const [takenSlots, setTakenSlots] = useState<Set<string>>(new Set());
+  const [loadingSlots, setLoadingSlots] = useState(false);
+
+  useEffect(() => {
+    if (!date) return;
+    setLoadingSlots(true);
+    getBookedSlotsForDate(date).then((slots) => {
+      setTakenSlots(new Set(slots));
+      setLoadingSlots(false);
+    });
+  }, [date]);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -44,8 +59,8 @@ export function DateTimeStep({
             return (
               <button
                 key={iso}
-                onClick={() => onSelectDate(iso)}
-                className={`flex min-w-14 flex-col items-center rounded-xl border px-3 py-2 ${
+                onClick={() => { onSelectDate(iso); onSelectTime(""); }}
+                className={`flex min-w-14 flex-col items-center rounded-xl border px-3 py-2 transition-colors ${
                   isSelected ? "border-brand-gold bg-surface-gray" : "border-divider"
                 }`}
               >
@@ -58,22 +73,26 @@ export function DateTimeStep({
           })}
         </div>
 
-        <p className="mt-6 text-sm font-semibold text-zinc-500">Available times</p>
+        <p className="mt-6 text-sm font-semibold text-zinc-500">
+          {loadingSlots ? "Checking availability…" : "Available times"}
+        </p>
         <div className="mt-2 grid grid-cols-3 gap-2">
           {TIME_SLOTS.map((slot) => {
-            const isUnavailable = UNAVAILABLE_SLOTS.has(slot);
+            const isTaken = takenSlots.has(slot);
             const isSelected = time === slot;
             return (
               <button
                 key={slot}
-                disabled={isUnavailable}
+                disabled={isTaken || !date || loadingSlots}
                 onClick={() => onSelectTime(slot)}
-                className={`rounded-full border px-3 py-2 text-sm font-bold ${
-                  isUnavailable
+                className={`rounded-full border px-3 py-2 text-sm font-bold transition-colors ${
+                  isTaken
                     ? "border-divider text-zinc-300 line-through"
                     : isSelected
                       ? "border-brand-gold bg-brand-gold text-brand-black"
-                      : "border-divider text-foreground"
+                      : !date || loadingSlots
+                        ? "border-divider text-zinc-400"
+                        : "border-divider text-foreground hover:border-zinc-400"
                 }`}
               >
                 {slot}
@@ -81,6 +100,10 @@ export function DateTimeStep({
             );
           })}
         </div>
+
+        {!date && (
+          <p className="mt-4 text-xs text-zinc-400">Select a date to see available times.</p>
+        )}
       </div>
 
       <div className="px-6 pb-8">

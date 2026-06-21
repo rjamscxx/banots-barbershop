@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { submitBooking } from "./actions";
 import { INITIAL_BOOKING_STATE, type BookingStep } from "@/components/booking/types";
 import { ServiceStep } from "@/components/booking/ServiceStep";
@@ -58,6 +59,17 @@ export default function BookPage() {
 
   return (
     <main className="flex flex-1 flex-col items-center bg-white">
+      <header className="sticky top-0 z-10 w-full border-b border-zinc-100 bg-white/90 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-md items-center justify-between px-6 py-4">
+          <Link
+            href="/"
+            className="font-[family-name:var(--font-display)] text-sm font-semibold tracking-tight text-foreground"
+          >
+            Banot&apos;s
+          </Link>
+          <span className="text-xs text-zinc-400">Book a slot</span>
+        </div>
+      </header>
       <section className="flex w-full max-w-md flex-1 flex-col">
         {step === "services" && (
           <ServiceStep
