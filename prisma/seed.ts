@@ -1,9 +1,33 @@
 import { prisma } from "../src/lib/prisma";
 
-async function main() {
+const HOURS = [
+  { day: "Mon", open: "9:00 AM", close: "7:00 PM", closed: false },
+  { day: "Tue", open: "9:00 AM", close: "7:00 PM", closed: false },
+  { day: "Wed", open: "9:00 AM", close: "7:00 PM", closed: false },
+  { day: "Thu", open: "9:00 AM", close: "7:00 PM", closed: false },
+  { day: "Fri", open: "9:00 AM", close: "7:00 PM", closed: false },
+  { day: "Sat", open: "9:00 AM", close: "7:00 PM", closed: false },
+  { day: "Sun", open: "9:00 AM", close: "7:00 PM", closed: true },
+];
+
+const SERVICES = [
+  { id: "svc-haircut", name: "Haircut", price: 150, durationMinutes: 30, sortOrder: 0 },
+  { id: "svc-shave", name: "Shave", price: 100, durationMinutes: 20, sortOrder: 1 },
+  { id: "svc-haircut-shave", name: "Haircut + Shave", price: 230, durationMinutes: 45, sortOrder: 2 },
+  { id: "svc-hot-towel-shave", name: "Hot Towel Shave", price: 150, durationMinutes: 30, sortOrder: 3 },
+];
+
+const PAYMENT_METHODS = [
+  { id: "gcash", label: "GCash", sortOrder: 0 },
+  { id: "gotyme", label: "GoTyme", sortOrder: 1 },
+  { id: "maya", label: "Maya", sortOrder: 2 },
+  { id: "bdo", label: "BDO Online Banking", sortOrder: 3 },
+  { id: "bpi", label: "BPI", sortOrder: 4 },
+];
+
+async function seedClients() {
   const existing = await prisma.client.count();
   if (existing > 0) {
-    console.log("Seed skipped — data already exists.");
     return;
   }
 
@@ -77,15 +101,29 @@ async function main() {
       reference: "BNT-100004",
     },
   });
-
-  console.log("Seed complete.");
 }
 
-main()
-  .catch((err) => {
-    console.error(err);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
+async function main() {
+  await seedClients();
+
+  await prisma.shopSettings.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      id: 1,
+      shopName: "Banot's Barbershop",
+      address: "Unit 4, Banot's Building, Quezon City",
+      phone: "",
+      hours: HOURS,
+    },
   });
+  for (const s of SERVICES) {
+    await prisma.service.upsert({ where: { id: s.id }, update: {}, create: s });
+  }
+  for (const m of PAYMENT_METHODS) {
+    await prisma.paymentMethod.upsert({ where: { id: m.id }, update: {}, create: m });
+  }
+  console.log("seeded");
+}
+
+main().finally(() => prisma.$disconnect());

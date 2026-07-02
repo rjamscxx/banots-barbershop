@@ -35,3 +35,39 @@ model Booking {
   reference       String?
   createdAt       DateTime @default(now())
 }
+
+model ShopSettings {
+  id        Int      @id @default(1)
+  shopName  String
+  address   String
+  phone     String   @default("")
+  hours     Json
+  updatedAt DateTime @updatedAt
+}
+
+model Service {
+  id              String  @id @default(cuid())
+  name            String
+  price           Int
+  durationMinutes Int
+  sortOrder       Int     @default(0)
+  active          Boolean @default(true)
+}
+
+model PaymentMethod {
+  id            String  @id
+  label         String
+  accountName   String  @default("")
+  accountNumber String  @default("")
+  qrImageUrl    String  @default("")
+  sortOrder     Int     @default(0)
+  active        Boolean @default(true)
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+}
