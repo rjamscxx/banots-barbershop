@@ -1,4 +1,5 @@
 import { put } from "@vercel/blob";
+import { randomBytes } from "crypto";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/session";
@@ -9,7 +10,8 @@ export async function POST(request: NextRequest) {
   const formData = await request.formData();
   const file = formData.get("file") as File | null;
   if (!file || file.size === 0) return NextResponse.json({ error: "No file" }, { status: 400 });
-  if (!file.type.startsWith("image/")) {
+  const BLOCKED_TYPES = ["image/svg+xml", "image/svg", "image/xml"];
+  if (BLOCKED_TYPES.includes(file.type) || !file.type.startsWith("image/")) {
     return NextResponse.json({ error: "Only image files are allowed" }, { status: 415 });
   }
   if (file.size > MAX_BYTES) {
@@ -28,12 +30,22 @@ export async function POST(request: NextRequest) {
     if (!/^[a-z0-9-]{1,32}$/.test(method)) {
       return NextResponse.json({ error: "Invalid method" }, { status: 400 });
     }
-    const blob = await put(`qr/${method}.png`, file, { access: "public", allowOverwrite: true });
-    return NextResponse.json({ url: blob.url });
+    try {
+      const blob = await put(`qr/${method}.png`, file, { access: "public", allowOverwrite: true });
+      return NextResponse.json({ url: blob.url });
+    } catch (err) {
+      console.error("[upload] qr blob put failed", err);
+      return NextResponse.json({ error: "Upload failed, please try again" }, { status: 502 });
+    }
   }
 
   const ext = (file.name.split(".").pop() ?? "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-  const name = `proofs/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-  const blob = await put(name, file, { access: "public" });
-  return NextResponse.json({ url: blob.url });
+  const name = `proofs/${Date.now()}-${randomBytes(4).toString("hex")}.${ext}`;
+  try {
+    const blob = await put(name, file, { access: "public" });
+    return NextResponse.json({ url: blob.url });
+  } catch (err) {
+    console.error("[upload] proof blob put failed", err);
+    return NextResponse.json({ error: "Upload failed, please try again" }, { status: 502 });
+  }
 }
