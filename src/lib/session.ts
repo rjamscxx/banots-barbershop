@@ -11,7 +11,10 @@ function sign(payload: string, secret: string) {
 /** Returns `"<expiryMs>.<hmac>"`, or null if SESSION_SECRET is unset (fail closed). */
 export function createSessionToken(now = Date.now(), maxAgeMs = DEFAULT_MAX_AGE_MS): string | null {
   const secret = process.env.SESSION_SECRET;
-  if (!secret) return null;
+  if (!secret) {
+    console.error("[session] SESSION_SECRET is not set — all logins will fail");
+    return null;
+  }
   const exp = String(now + maxAgeMs);
   return `${exp}.${sign(exp, secret)}`;
 }
