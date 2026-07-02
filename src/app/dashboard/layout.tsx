@@ -2,10 +2,11 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { DashboardNav } from "@/components/dashboard/DashboardNav";
 import { getBookingsByStatus } from "@/lib/dashboard-data";
+import { SESSION_COOKIE, verifySessionToken } from "@/lib/session";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
-  if (!cookieStore.has("banot-auth")) {
+  if (!verifySessionToken(cookieStore.get(SESSION_COOKIE)?.value)) {
     redirect("/login");
   }
 
