@@ -36,6 +36,8 @@ describe("session tokens", () => {
     expect(verifySessionToken("")).toBe(false);
     expect(verifySessionToken("not.a.token")).toBe(false);
     expect(verifySessionToken("12345")).toBe(false);
+    expect(verifySessionToken(`${Date.now() + 100000}.deadbeef.extra`)).toBe(false);
+    expect(verifySessionToken(`${Date.now() + 100000}.`)).toBe(false);
   });
 
   it("fails closed without SESSION_SECRET", () => {

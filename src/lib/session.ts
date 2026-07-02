@@ -23,9 +23,9 @@ export function verifySessionToken(token: string | undefined | null, now = Date.
   if (dot === -1) return false;
   const exp = token.slice(0, dot);
   const sig = token.slice(dot + 1);
-  if (!/^\d+$/.test(exp) || Number(exp) < now) return false;
+  if (!/^\d{13,14}$/.test(exp) || Number(exp) < now) return false;
   const expected = sign(exp, secret);
-  const a = Buffer.from(sig);
-  const b = Buffer.from(expected);
+  const a = Buffer.from(sig, "hex");
+  const b = Buffer.from(expected, "hex");
   return a.length === b.length && timingSafeEqual(a, b);
 }
