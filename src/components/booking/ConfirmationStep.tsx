@@ -22,7 +22,7 @@ export function ConfirmationStep({ booking, onDone }: ConfirmationStepProps) {
           </svg>
         </div>
 
-        <h1 className="mt-5 font-[family-name:var(--font-display)] text-2xl font-semibold text-foreground">
+        <h1 className="mt-5 font-[family-name:var(--font-bebas)] text-4xl text-foreground tracking-wide">
           You&apos;re booked!
         </h1>
         <p className="mt-2 max-w-[260px] text-center text-sm text-zinc-500">

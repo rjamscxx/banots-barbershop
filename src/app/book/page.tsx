@@ -58,16 +58,16 @@ export default function BookPage() {
   }
 
   return (
-    <main className="flex flex-1 flex-col items-center bg-white">
-      <header className="sticky top-0 z-10 w-full border-b border-zinc-100 bg-white/90 backdrop-blur-sm">
+    <main className="flex flex-1 flex-col items-center bg-brand-black">
+      <header className="sticky top-0 z-10 w-full border-b border-zinc-800 bg-brand-black/95 backdrop-blur-sm">
         <div className="mx-auto flex max-w-md items-center justify-between px-6 py-4">
           <Link
             href="/"
-            className="font-[family-name:var(--font-display)] text-sm font-semibold tracking-tight text-foreground"
+            className="font-[family-name:var(--font-bebas)] text-2xl tracking-[0.06em] text-white"
           >
             Banot&apos;s
           </Link>
-          <span className="text-xs text-zinc-400">Book a slot</span>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-600">Book a slot</span>
         </div>
       </header>
       <section className="flex w-full max-w-md flex-1 flex-col">

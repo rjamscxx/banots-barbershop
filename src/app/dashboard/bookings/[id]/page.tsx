@@ -6,12 +6,12 @@ import { approveBooking, rejectBooking, completeBooking, markNoShow, cancelBooki
 import type { BookingStatus } from "@/lib/dashboard-shared";
 
 const STATUS_CONFIG: Record<BookingStatus, { label: string; color: string }> = {
-  pending_verification: { label: "Pending verification", color: "bg-amber-100 text-amber-700" },
-  confirmed:            { label: "Confirmed",            color: "bg-green-100 text-green-700" },
-  rejected:             { label: "Rejected",             color: "bg-red-100 text-red-600" },
-  completed:            { label: "Completed",            color: "bg-zinc-100 text-zinc-600" },
-  no_show:              { label: "No-show",              color: "bg-zinc-100 text-zinc-600" },
-  cancelled:            { label: "Cancelled",            color: "bg-zinc-100 text-zinc-600" },
+  pending_verification: { label: "Pending verification", color: "bg-amber-900/30 text-amber-400 border border-amber-800/40" },
+  confirmed:            { label: "Confirmed",            color: "bg-green-900/30 text-green-400 border border-green-800/40" },
+  rejected:             { label: "Rejected",             color: "bg-brand-red/10 text-brand-red border border-brand-red/20" },
+  completed:            { label: "Completed",            color: "bg-zinc-800 text-zinc-400 border border-zinc-700" },
+  no_show:              { label: "No-show",              color: "bg-zinc-800 text-zinc-500 border border-zinc-700" },
+  cancelled:            { label: "Cancelled",            color: "bg-zinc-800 text-zinc-500 border border-zinc-700" },
 };
 
 export default async function BookingDetailPage({
@@ -25,28 +25,34 @@ export default async function BookingDetailPage({
 
   const client = await getClientById(booking.clientId);
   const backHref = booking.status === "pending_verification" ? "/dashboard/pending" : "/dashboard";
-  const statusCfg = STATUS_CONFIG[booking.status as BookingStatus] ?? { label: booking.status, color: "bg-zinc-100 text-zinc-600" };
+  const statusCfg = STATUS_CONFIG[booking.status as BookingStatus] ?? { label: booking.status, color: "bg-zinc-800 text-zinc-400 border border-zinc-700" };
 
   return (
     <div className="flex flex-1 flex-col">
 
       {/* Header */}
-      <div className="border-b border-divider px-6 pb-5 pt-6">
-        <Link href={backHref} className="flex items-center gap-1.5 text-xs font-semibold text-zinc-400 hover:text-foreground transition-colors">
+      <div className="bg-brand-black px-6 pb-5 pt-6">
+        <Link href={backHref} className="flex items-center gap-1.5 text-xs font-semibold text-zinc-600 transition-colors hover:text-zinc-300">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path d="M7.5 2L3.5 6L7.5 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M7.5 2L3.5 6L7.5 10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
           Back
         </Link>
-        <div className="mt-3 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-foreground">Booking</h1>
-          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusCfg.color}`}>
+        <div className="mt-3 flex items-start justify-between gap-3">
+          <div>
+            <h1 className="font-[family-name:var(--font-bebas)] text-4xl text-white leading-none">
+              {client?.name ?? "Booking"}
+            </h1>
+            {booking.reference ? (
+              <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-600">
+                Ref: {booking.reference}
+              </p>
+            ) : null}
+          </div>
+          <span className={`mt-1 shrink-0 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide ${statusCfg.color}`}>
             {statusCfg.label}
           </span>
         </div>
-        {booking.reference ? (
-          <p className="mt-1 text-xs text-zinc-400">Ref: {booking.reference}</p>
-        ) : null}
       </div>
 
       <div className="flex flex-1 flex-col px-6 py-5 gap-5">
@@ -54,8 +60,8 @@ export default async function BookingDetailPage({
         {/* Client + booking info */}
         <div className="rounded-2xl border border-divider overflow-hidden">
           <div className="bg-surface-gray px-5 py-3">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">Client</p>
-            <p className="mt-0.5 font-semibold text-foreground">{client?.name}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Client</p>
+            <p className="mt-0.5 font-bold text-foreground">{client?.name}</p>
             <p className="text-sm text-zinc-500">{client?.phone}</p>
           </div>
           <div className="divide-y divide-zinc-50">
@@ -65,10 +71,13 @@ export default async function BookingDetailPage({
               { label: "Time",      value: booking.time },
               { label: "Amount",    value: formatPeso(booking.service.price) },
               { label: "Payment",   value: booking.paymentMethod ?? null },
+              { label: "Source",    value: booking.source === "walk_in" ? "Walk-in" : "Online" },
             ].filter(r => r.value).map(({ label, value }) => (
               <div key={label} className="flex justify-between px-5 py-3">
                 <span className="text-sm text-zinc-500">{label}</span>
-                <span className="text-sm font-semibold text-foreground">{value}</span>
+                <span className={`text-sm font-semibold ${label === "Amount" ? "font-[family-name:var(--font-bebas)] text-base text-foreground" : "text-foreground"}`}>
+                  {value}
+                </span>
               </div>
             ))}
           </div>
@@ -77,7 +86,7 @@ export default async function BookingDetailPage({
         {/* Proof of payment */}
         {booking.status === "pending_verification" ? (
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-400">
               Proof of payment
             </p>
             {booking.proofImageUrl ? (
@@ -101,7 +110,7 @@ export default async function BookingDetailPage({
         {booking.status === "pending_verification" ? (
           <div className="flex gap-3">
             <form action={rejectBooking.bind(null, booking.id)} className="flex-1">
-              <button className="flex h-12 w-full items-center justify-center rounded-full border border-divider text-sm font-bold text-foreground transition-colors hover:bg-zinc-50">
+              <button className="flex h-12 w-full items-center justify-center rounded-full border border-brand-red/30 text-sm font-bold text-brand-red transition-colors hover:bg-brand-red/5">
                 Reject
               </button>
             </form>
@@ -122,12 +131,12 @@ export default async function BookingDetailPage({
             </form>
             <div className="flex gap-3">
               <form action={markNoShow.bind(null, booking.id)} className="flex-1">
-                <button className="flex h-12 w-full items-center justify-center rounded-full border border-divider text-sm font-bold text-foreground hover:bg-zinc-50">
+                <button className="flex h-12 w-full items-center justify-center rounded-full border border-divider text-sm font-bold text-zinc-500 hover:bg-zinc-50">
                   No-show
                 </button>
               </form>
               <form action={cancelBooking.bind(null, booking.id)} className="flex-1">
-                <button className="flex h-12 w-full items-center justify-center rounded-full border border-divider text-sm font-bold text-foreground hover:bg-zinc-50">
+                <button className="flex h-12 w-full items-center justify-center rounded-full border border-divider text-sm font-bold text-zinc-500 hover:bg-zinc-50">
                   Cancel
                 </button>
               </form>

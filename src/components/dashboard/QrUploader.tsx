@@ -26,12 +26,11 @@ export function QrUploader({ methodId, label, initialUrl }: Props) {
     const data = await res.json();
     setIsUploading(false);
     if (data.url) setUrl(`${data.url}?t=${Date.now()}`);
-    // reset input so same file can be re-selected
     if (inputRef.current) inputRef.current.value = "";
   }
 
   return (
-    <div className="flex flex-col items-center gap-2 rounded-xl border border-divider px-3 py-4">
+    <div className="flex flex-col items-center gap-2 rounded-xl border border-divider bg-surface-gray px-3 py-4">
       {url ? (
         <img
           src={url}
@@ -39,15 +38,15 @@ export function QrUploader({ methodId, label, initialUrl }: Props) {
           className="h-24 w-24 rounded-lg object-contain"
         />
       ) : (
-        <div className="flex h-24 w-24 items-center justify-center rounded-lg border border-divider bg-surface-gray text-xs text-zinc-400">
+        <div className="flex h-24 w-24 items-center justify-center rounded-lg border border-dashed border-zinc-200 bg-white text-xs text-zinc-400">
           No QR
         </div>
       )}
-      <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">{label}</p>
+      <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">{label}</p>
       <button
         onClick={() => inputRef.current?.click()}
         disabled={isUploading}
-        className="rounded-full border border-divider px-3 py-1 text-xs font-semibold text-foreground transition-colors hover:bg-surface-gray disabled:opacity-40"
+        className="rounded-full border border-divider bg-white px-3 py-1 text-xs font-semibold text-foreground transition-colors hover:border-zinc-400 disabled:opacity-40"
       >
         {isUploading ? "Uploading…" : url ? "Replace" : "Upload"}
       </button>

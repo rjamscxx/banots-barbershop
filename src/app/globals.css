@@ -1,13 +1,19 @@
 @import "tailwindcss";
 
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #1a1a1c;
-  --brand-black: #121212;
-  --brand-gold: #c9a04a;
-  --brand-gold-pressed: #ad8638;
+  --brand-black: #0E0E0E;
+  --brand-gold: #D4A843;
+  --brand-gold-pressed: #B8922E;
+  --brand-red: #E83030;
   --surface-gray: #f6f6f7;
   --surface-paper: #faf7f1;
+  --surface-dark: #1A1A1A;
   --divider: #e4e4e7;
 }
 
@@ -17,11 +23,14 @@
   --color-brand-black: var(--brand-black);
   --color-brand-gold: var(--brand-gold);
   --color-brand-gold-pressed: var(--brand-gold-pressed);
+  --color-brand-red: var(--brand-red);
   --color-surface-gray: var(--surface-gray);
   --color-surface-paper: var(--surface-paper);
+  --color-surface-dark: var(--surface-dark);
   --color-divider: var(--divider);
   --font-sans: var(--font-inter);
   --font-display: var(--font-fraunces);
+  --font-display-bold: var(--font-bebas);
 }
 
 body {
@@ -40,22 +49,22 @@ body {
   color: var(--brand-black);
   border-radius: 9999px;
   font-weight: 700;
-  box-shadow: 0 2px 14px rgba(201, 160, 74, 0.28);
+  box-shadow: 0 2px 14px rgba(212, 168, 67, 0.32);
   transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
   white-space: nowrap;
 }
 .btn-gold:hover,
 .btn-gold:focus-visible {
   background: var(--brand-gold-pressed);
-  box-shadow: 0 4px 20px rgba(201, 160, 74, 0.42);
+  box-shadow: 0 4px 22px rgba(212, 168, 67, 0.48);
   transform: translateY(-1px);
 }
 .btn-gold:active {
   transform: translateY(0);
-  box-shadow: 0 1px 8px rgba(201, 160, 74, 0.22);
+  box-shadow: 0 1px 8px rgba(212, 168, 67, 0.22);
 }
 
-/* Ghost CTA — for use on dark/video sections */
+/* Ghost CTA — for use on dark sections */
 .btn-ghost {
   display: inline-flex;
   align-items: center;
@@ -75,6 +84,28 @@ body {
   color: #fff;
 }
 
+/* Dark CTA — for use on light backgrounds */
+.btn-dark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  background: var(--brand-black);
+  color: #ffffff;
+  border-radius: 9999px;
+  font-weight: 700;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  white-space: nowrap;
+}
+.btn-dark:hover,
+.btn-dark:focus-visible {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+.btn-dark:active {
+  transform: translateY(0);
+}
+
 .tabular {
   font-variant-numeric: tabular-nums;
 }
@@ -85,26 +116,26 @@ body {
   position: absolute;
   inset: 0;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
-  opacity: 0.04;
+  opacity: 0.05;
   pointer-events: none;
   z-index: 3;
 }
 
-/* Hero section — CSS-driven stagger (no JS dependency, no blank flash) */
-@keyframes hero-fade-up {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* Hero section — blur-in stagger, no Y movement */
+@keyframes hero-blur-in {
+  from { opacity: 0; filter: blur(10px); }
+  to   { opacity: 1; filter: blur(0px); }
 }
 
 .hero-anim {
   opacity: 0;
-  animation: hero-fade-up 0.5s ease-out forwards;
+  animation: hero-blur-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 .hero-anim-1 { animation-delay: 0ms; }
-.hero-anim-2 { animation-delay: 110ms; }
-.hero-anim-3 { animation-delay: 210ms; }
-.hero-anim-4 { animation-delay: 330ms; }
-.hero-anim-5 { animation-delay: 460ms; }
+.hero-anim-2 { animation-delay: 100ms; }
+.hero-anim-3 { animation-delay: 220ms; }
+.hero-anim-4 { animation-delay: 360ms; }
+.hero-anim-5 { animation-delay: 480ms; }
 
 @media (prefers-reduced-motion: reduce) {
   .hero-anim {
@@ -119,9 +150,36 @@ body {
   to   { transform: translateX(-50%); }
 }
 .marquee-track {
-  animation: marquee-scroll 28s linear infinite;
+  animation: marquee-scroll 30s linear infinite;
   will-change: transform;
 }
 @media (prefers-reduced-motion: reduce) {
   .marquee-track { animation: none; }
+}
+
+/* Gold ambient glow — used on the live stat counter */
+.glow-gold {
+  text-shadow: 0 0 40px rgba(212, 168, 67, 0.55), 0 0 80px rgba(212, 168, 67, 0.2);
+}
+
+/* Service row left-accent bar */
+.service-row {
+  position: relative;
+  overflow: hidden;
+}
+.service-row::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+  border-radius: 9999px;
+  background: var(--brand-gold);
+  transform: scaleY(0);
+  transform-origin: center;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.service-row:hover::before {
+  transform: scaleY(1);
 }

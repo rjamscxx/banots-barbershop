@@ -20,7 +20,7 @@ export function DetailsStep({
   const canContinue = name.trim().length > 1 && phone.trim().length > 6;
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex flex-1 flex-col bg-brand-black">
       <StepHeader title="Your details" step={3} totalSteps={5} onBack={onBack} />
 
       <div className="flex flex-1 flex-col gap-5 px-6 py-6">
@@ -29,7 +29,7 @@ export function DetailsStep({
         </p>
 
         <label className="flex flex-col gap-1.5">
-          <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-600">
             Full name
           </span>
           <input
@@ -37,12 +37,12 @@ export function DetailsStep({
             onChange={(e) => onChangeName(e.target.value)}
             placeholder="Juan Dela Cruz"
             autoComplete="name"
-            className="h-12 rounded-xl border border-divider bg-white px-4 text-base text-foreground outline-none transition-colors placeholder:text-zinc-300 focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/10"
+            className="h-12 rounded-xl border border-zinc-800 bg-surface-dark px-4 text-base text-white outline-none transition-colors placeholder:text-zinc-700 focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/10"
           />
         </label>
 
         <label className="flex flex-col gap-1.5">
-          <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-600">
             Mobile number
           </span>
           <input
@@ -52,11 +52,11 @@ export function DetailsStep({
             type="tel"
             inputMode="numeric"
             autoComplete="tel"
-            className="h-12 rounded-xl border border-divider bg-white px-4 text-base text-foreground outline-none transition-colors placeholder:text-zinc-300 focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/10"
+            className="h-12 rounded-xl border border-zinc-800 bg-surface-dark px-4 text-base text-white outline-none transition-colors placeholder:text-zinc-700 focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/10"
           />
         </label>
 
-        <p className="text-xs text-zinc-400">
+        <p className="text-xs text-zinc-700">
           Your number is used to look up your booking at the shop.
         </p>
       </div>
@@ -65,7 +65,7 @@ export function DetailsStep({
         <button
           onClick={onNext}
           disabled={!canContinue}
-          className="btn-gold h-12 w-full text-sm disabled:opacity-40 disabled:shadow-none disabled:translate-y-0"
+          className="btn-gold h-12 w-full text-sm disabled:opacity-30 disabled:shadow-none disabled:translate-y-0"
         >
           Continue
         </button>

@@ -9,7 +9,6 @@ function nextOpenDays(count: number) {
   const days: Date[] = [];
   const d = new Date();
   while (days.length < count) {
-    // skip Sundays (day 0)
     if (d.getDay() !== 0) days.push(new Date(d));
     d.setDate(d.getDate() + 1);
   }
@@ -47,12 +46,12 @@ export function DateTimeStep({
   }, [date]);
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex flex-1 flex-col bg-brand-black">
       <StepHeader title="Pick a date & time" step={2} totalSteps={5} onBack={onBack} />
 
-      <div className="flex flex-1 flex-col px-6 py-6">
-        <p className="text-sm font-semibold text-zinc-500">Date</p>
-        <div className="mt-2 flex gap-2 overflow-x-auto pb-2">
+      <div className="flex flex-1 flex-col px-6 py-5">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-600">Date</p>
+        <div className="mt-3 flex gap-2 overflow-x-auto pb-2">
           {days.map((d) => {
             const iso = d.toISOString().slice(0, 10);
             const isSelected = date === iso;
@@ -60,23 +59,31 @@ export function DateTimeStep({
               <button
                 key={iso}
                 onClick={() => { onSelectDate(iso); onSelectTime(""); }}
-                className={`flex min-w-14 flex-col items-center rounded-xl border px-3 py-2 transition-colors ${
-                  isSelected ? "border-brand-gold bg-surface-gray" : "border-divider"
+                className={`flex min-w-14 flex-col items-center rounded-xl border px-3 py-3 transition-all ${
+                  isSelected
+                    ? "border-brand-gold bg-brand-gold text-brand-black"
+                    : "border-zinc-800 hover:border-zinc-600"
                 }`}
               >
-                <span className="text-xs text-zinc-500">
+                <span className={`text-[10px] font-semibold uppercase tracking-wide ${
+                  isSelected ? "text-brand-black/70" : "text-zinc-600"
+                }`}>
                   {d.toLocaleDateString("en-US", { weekday: "short" })}
                 </span>
-                <span className="text-base font-bold text-foreground">{d.getDate()}</span>
+                <span className={`font-[family-name:var(--font-bebas)] text-2xl leading-tight ${
+                  isSelected ? "text-brand-black" : "text-white"
+                }`}>
+                  {d.getDate()}
+                </span>
               </button>
             );
           })}
         </div>
 
-        <p className="mt-6 text-sm font-semibold text-zinc-500">
+        <p className="mt-6 text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-600">
           {loadingSlots ? "Checking availability…" : "Available times"}
         </p>
-        <div className="mt-2 grid grid-cols-3 gap-2">
+        <div className="mt-3 grid grid-cols-3 gap-2">
           {TIME_SLOTS.map((slot) => {
             const isTaken = takenSlots.has(slot);
             const isSelected = time === slot;
@@ -85,14 +92,14 @@ export function DateTimeStep({
                 key={slot}
                 disabled={isTaken || !date || loadingSlots}
                 onClick={() => onSelectTime(slot)}
-                className={`rounded-full border px-3 py-2 text-sm font-bold transition-colors ${
+                className={`rounded-xl border px-3 py-2.5 text-sm font-bold transition-all ${
                   isTaken
-                    ? "border-divider text-zinc-300 line-through"
+                    ? "border-zinc-800 text-zinc-700 line-through cursor-not-allowed"
                     : isSelected
                       ? "border-brand-gold bg-brand-gold text-brand-black"
                       : !date || loadingSlots
-                        ? "border-divider text-zinc-400"
-                        : "border-divider text-foreground hover:border-zinc-400"
+                        ? "border-zinc-800 text-zinc-700"
+                        : "border-zinc-800 text-zinc-300 hover:border-zinc-500 hover:text-white"
                 }`}
               >
                 {slot}
@@ -102,7 +109,7 @@ export function DateTimeStep({
         </div>
 
         {!date && (
-          <p className="mt-4 text-xs text-zinc-400">Select a date to see available times.</p>
+          <p className="mt-4 text-xs text-zinc-700">Select a date to see available times.</p>
         )}
       </div>
 
@@ -110,7 +117,7 @@ export function DateTimeStep({
         <button
           onClick={onNext}
           disabled={!date || !time}
-          className="flex h-13 w-full items-center justify-center rounded-full bg-brand-gold px-5 text-base font-bold text-brand-black transition-colors hover:bg-brand-gold-pressed disabled:opacity-40"
+          className="btn-gold h-12 w-full text-sm disabled:opacity-30 disabled:shadow-none disabled:translate-y-0"
         >
           Continue
         </button>

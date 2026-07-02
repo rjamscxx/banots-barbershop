@@ -24,12 +24,14 @@ export default async function DashboardTodayPage() {
     <div className="flex flex-1 flex-col">
 
       {/* Header */}
-      <div className="border-b border-divider px-6 pb-5 pt-6">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-400">
+      <div className="bg-brand-black px-6 pb-5 pt-6">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-600">
           {SHOP_SETTINGS.shopName}
         </p>
-        <h1 className="mt-1 text-2xl font-bold text-foreground">Today</h1>
-        <p className="text-sm text-zinc-400">{todayLabel}</p>
+        <h1 className="mt-1 font-[family-name:var(--font-bebas)] text-5xl text-white leading-none">
+          Today
+        </h1>
+        <p className="mt-1 text-xs text-zinc-500">{todayLabel}</p>
       </div>
 
       <div className="flex flex-1 flex-col px-6 py-5 gap-5">
@@ -37,18 +39,20 @@ export default async function DashboardTodayPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col rounded-2xl border border-divider bg-surface-gray px-5 py-4">
-            <p className="text-3xl font-bold text-foreground">{stats.count}</p>
+            <p className="font-[family-name:var(--font-bebas)] text-4xl text-foreground">{stats.count}</p>
             <p className="mt-1 text-xs text-zinc-500">Confirmed today</p>
           </div>
           <div className="flex flex-col rounded-2xl border border-divider bg-surface-gray px-5 py-4">
-            <p className="text-3xl font-bold text-foreground">{formatPeso(stats.revenue)}</p>
+            <p className="font-[family-name:var(--font-bebas)] text-4xl text-brand-gold tabular">
+              {formatPeso(stats.revenue)}
+            </p>
             <p className="mt-1 text-xs text-zinc-500">Revenue today</p>
           </div>
         </div>
 
         {/* Schedule */}
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-400">
             Schedule
           </p>
 
@@ -56,7 +60,7 @@ export default async function DashboardTodayPage() {
             {bookings.length === 0 ? (
               <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200 py-12 text-center">
                 <div className="text-2xl">✂️</div>
-                <p className="mt-3 text-sm font-semibold text-zinc-400">No bookings today</p>
+                <p className="mt-3 text-sm font-bold text-zinc-400">No bookings today</p>
                 <p className="mt-1 text-xs text-zinc-300">Walk-ins can still be added below</p>
               </div>
             ) : (
