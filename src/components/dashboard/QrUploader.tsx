@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { setPaymentMethodQr } from "@/app/dashboard/settings/actions";
 
 type Props = {
   methodId: string;
@@ -11,12 +12,14 @@ type Props = {
 export function QrUploader({ methodId, label, initialUrl }: Props) {
   const [url, setUrl] = useState(initialUrl);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   async function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     setIsUploading(true);
+    setUploadError(null);
     const form = new FormData();
     form.append("file", file);
     const res = await fetch(`/api/upload?type=qr&method=${methodId}`, {
@@ -25,7 +28,17 @@ export function QrUploader({ methodId, label, initialUrl }: Props) {
     });
     const data = await res.json();
     setIsUploading(false);
-    if (data.url) setUrl(`${data.url}?t=${Date.now()}`);
+    if (!res.ok) {
+      setUploadError(data?.error ?? "Upload failed — please try again");
+      if (inputRef.current) inputRef.current.value = "";
+      return;
+    }
+    if (data.url) {
+      const blobUrl = `${data.url}?t=${Date.now()}`;
+      setUrl(blobUrl);
+      const result = await setPaymentMethodQr(methodId, data.url);
+      if (!result.ok) setUploadError(result.error);
+    }
     if (inputRef.current) inputRef.current.value = "";
   }
 
@@ -50,6 +63,9 @@ export function QrUploader({ methodId, label, initialUrl }: Props) {
       >
         {isUploading ? "Uploading…" : url ? "Replace" : "Upload"}
       </button>
+      {uploadError && (
+        <p className="text-center text-[10px] text-red-500">{uploadError}</p>
+      )}
       <input
         ref={inputRef}
         type="file"
