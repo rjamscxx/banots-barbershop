@@ -18,10 +18,10 @@ export function WalkInForm({ clients, services }: { clients: Client[]; services:
 
   useEffect(() => {
     setLoadingSlots(true);
-    getSlotsForDate(date).then((s) => {
-      setSlots(s);
-      setLoadingSlots(false);
-    });
+    getSlotsForDate(date)
+      .then((s) => setSlots(s))
+      .catch(() => setSlots([]))
+      .finally(() => setLoadingSlots(false));
   }, [date]);
 
   return (
@@ -96,8 +96,10 @@ export function WalkInForm({ clients, services }: { clients: Client[]; services:
               {slots.length === 0 && !loadingSlots ? (
                 <option value="">Closed / no slots</option>
               ) : (
-                slots.map(({ time: slot }) => (
-                  <option key={slot} value={slot}>{slot}</option>
+                slots.map(({ time: slot, taken }) => (
+                  <option key={slot} value={slot} disabled={taken}>
+                    {slot}{taken ? " (taken)" : ""}
+                  </option>
                 ))
               )}
             </select>

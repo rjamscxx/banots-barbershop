@@ -3,6 +3,7 @@ import Image from "next/image";
 import { getNextOpenSlotToday, getWeeklyBookingCount } from "@/lib/dashboard-data";
 import { getShopSettings, getActiveServices } from "@/lib/settings-data";
 import { formatPeso } from "@/lib/booking-data";
+import type { DayHours } from "@/lib/slots";
 
 export const dynamic = "force-dynamic";
 import { Reveal } from "@/components/landing/Reveal";
@@ -75,15 +76,32 @@ const REVIEWS = [
 ];
 
 /* ── Marquee items ────────────────────────────────────────── */
-const TICKER = [
+const TICKER_BASE = [
   "Haircut",
   "Shave",
   "Hot Towel Shave",
   "Haircut + Shave",
   "GCash · Maya · Bank",
-  "Mon – Sat · 9 AM – 7 PM",
-  "Quezon City",
 ];
+
+/* Group consecutive days with identical hours into range rows,
+   e.g. Mon..Sat @ 9-7 + Sun closed → "Mon – Sat" / "Sun". */
+type HoursRow = { label: string; value: string; closed: boolean };
+
+function groupHours(hours: DayHours[]): HoursRow[] {
+  const rows: HoursRow[] = [];
+  for (const h of hours) {
+    const value = h.closed ? "Closed" : `${h.open} – ${h.close}`;
+    const last = rows[rows.length - 1];
+    if (last && last.value === value) {
+      const firstDay = last.label.split(" – ")[0];
+      last.label = `${firstDay} – ${h.day}`;
+    } else {
+      rows.push({ label: h.day, value, closed: h.closed });
+    }
+  }
+  return rows;
+}
 
 export default async function Home() {
   const [nextSlot, weeklyCount, settings, services] = await Promise.all([
@@ -93,13 +111,12 @@ export default async function Home() {
     getActiveServices(),
   ]);
 
-  const weekdayEntry = settings.hours.find((h) => h.day === "Mon") ?? settings.hours.find((h) => !h.closed);
-  const sundayEntry = settings.hours.find((h) => h.day === "Sun");
-  const weekdayLabel = "Mon-Sat";
-  const weekdayOpen = weekdayEntry?.open ?? "9:00 AM";
-  const weekdayClose = weekdayEntry?.close ?? "7:00 PM";
-  const sundayLabel = sundayEntry?.day ?? "Sun";
-  const sundayOpen = sundayEntry?.closed ? "Closed" : (sundayEntry?.open ?? "Closed");
+  const hourGroups = groupHours(settings.hours);
+  const openSummary = hourGroups
+    .filter((g) => !g.closed)
+    .map((g) => `${g.label} · ${g.value}`)
+    .join(" / ");
+  const ticker = [...TICKER_BASE, ...(openSummary ? [openSummary] : []), "Quezon City"];
   const serviceCount = services.length;
 
   return (
@@ -385,7 +402,7 @@ export default async function Home() {
       {/* ── Marquee ticker ──────────────────────────────── */}
       <div className="overflow-hidden border-y border-white/5 bg-brand-black py-5">
         <div className="marquee-track flex w-max items-center">
-          {[...TICKER, ...TICKER].map((item, i) => (
+          {[...ticker, ...ticker].map((item, i) => (
             <span
               key={i}
               className="flex items-center gap-7 px-7 font-[family-name:var(--font-bebas)] text-base tracking-[0.15em] text-zinc-500"
@@ -427,7 +444,7 @@ export default async function Home() {
               Book a slot
             </Link>
             <span className="text-xs text-zinc-600">
-              {weekdayLabel} &middot; {weekdayOpen}–{weekdayClose}
+              {openSummary}
             </span>
           </div>
         </Reveal>
@@ -455,14 +472,14 @@ export default async function Home() {
                 Hours
               </p>
               <div className="mt-3 space-y-1.5">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-zinc-500">{weekdayLabel}</span>
-                  <span className="font-semibold text-foreground">{weekdayOpen} – {weekdayClose}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-zinc-500">{sundayLabel}</span>
-                  <span className="font-semibold text-zinc-400">{sundayOpen}</span>
-                </div>
+                {hourGroups.map((g) => (
+                  <div key={g.label} className="flex items-center justify-between text-sm">
+                    <span className="text-zinc-500">{g.label}</span>
+                    <span className={`font-semibold ${g.closed ? "text-zinc-400" : "text-foreground"}`}>
+                      {g.value}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
 
