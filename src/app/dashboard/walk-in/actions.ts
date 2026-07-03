@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { addClient, addWalkInBooking, SHOP_SETTINGS } from "@/lib/dashboard-data";
+import { addClient, addWalkInBooking } from "@/lib/dashboard-data";
+import { getActiveServices } from "@/lib/settings-data";
 import { requireSession } from "@/lib/session-server";
 
 export async function createWalkIn(formData: FormData) {
@@ -12,7 +13,8 @@ export async function createWalkIn(formData: FormData) {
   const date = String(formData.get("date") ?? "");
   const time = String(formData.get("time") ?? "");
 
-  const service = SHOP_SETTINGS.services.find((s) => s.name === serviceName);
+  const allServices = await getActiveServices();
+  const service = allServices.find((s) => s.name === serviceName);
   if (!service || !date || !time) return;
 
   let clientId = clientChoice;

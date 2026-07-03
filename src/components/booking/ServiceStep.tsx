@@ -1,24 +1,26 @@
-import { SERVICES, formatPeso, type Service } from "@/lib/booking-data";
+import { formatPeso } from "@/lib/booking-data";
+import type { ServiceRecord } from "@/lib/settings-data";
 import { StepHeader } from "./StepHeader";
 
 type ServiceStepProps = {
-  selected: Service | null;
-  onSelect: (service: Service) => void;
+  services: ServiceRecord[];
+  selected: ServiceRecord | null;
+  onSelect: (service: ServiceRecord) => void;
   onNext: () => void;
 };
 
-export function ServiceStep({ selected, onSelect, onNext }: ServiceStepProps) {
+export function ServiceStep({ services, selected, onSelect, onNext }: ServiceStepProps) {
   return (
     <div className="flex flex-1 flex-col bg-brand-black">
       <StepHeader title="Pick a service" step={1} totalSteps={5} />
 
       <div className="flex flex-1 flex-col px-6 py-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-600">
-          {SERVICES.length} services available
+          {services.length} services available
         </p>
 
         <div className="mt-4">
-          {SERVICES.map((service, i) => {
+          {services.map((service, i) => {
             const isSelected = selected?.id === service.id;
             return (
               <button
@@ -28,7 +30,7 @@ export function ServiceStep({ selected, onSelect, onNext }: ServiceStepProps) {
                   isSelected
                     ? "border-brand-gold/40 bg-brand-gold/5 -mx-3 px-3 rounded-lg"
                     : "border-zinc-800"
-                } ${i === SERVICES.length - 1 && !isSelected ? "border-b border-zinc-800" : ""}`}
+                } ${i === services.length - 1 && !isSelected ? "border-b border-zinc-800" : ""}`}
               >
                 <div className="flex items-start gap-4">
                   <span className={`mt-0.5 font-[family-name:var(--font-bebas)] text-xl tabular transition-colors ${

@@ -1,10 +1,10 @@
 import { prisma } from "./prisma";
 import type { Booking as BookingRow, Client as ClientRow } from "@/generated/prisma/client";
 import type { BookingStatus, BookingSource, BookingServiceSnapshot, Booking, Client } from "./dashboard-shared";
-import { TIME_SLOTS, UNAVAILABLE_SLOTS } from "./booking-data";
+import { getSlotsForDateFromSettings } from "./settings-data";
 
 export type { BookingStatus, BookingSource, BookingServiceSnapshot, Booking, Client };
-export { SHOP_SETTINGS, formatPeso } from "./dashboard-shared";
+export { formatPeso } from "./dashboard-shared";
 
 function mapBooking(row: BookingRow): Booking {
   return {
@@ -136,6 +136,13 @@ export async function getBookingsByDate(date: string) {
   return rows.map(mapBooking);
 }
 
+export async function getActiveBookingsByDate(date: string) {
+  const rows = await prisma.booking.findMany({
+    where: { date, status: { in: ACTIVE_STATUSES } },
+  });
+  return rows.map(mapBooking);
+}
+
 export async function getBookingsByClient(clientId: string) {
   const rows = await prisma.booking.findMany({ where: { clientId } });
   return rows.map(mapBooking);
@@ -154,8 +161,7 @@ export async function getNextOpenSlotToday() {
   const today = now.toISOString().slice(0, 10);
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
 
-  for (const slot of TIME_SLOTS) {
-    if (UNAVAILABLE_SLOTS.has(slot)) continue;
+  for (const slot of await getSlotsForDateFromSettings(today)) {
     const slotMinutes = parseSlotToMinutes(slot);
     if (slotMinutes === null || slotMinutes < nowMinutes) continue;
     if (!(await isSlotTaken(today, slot))) return slot;

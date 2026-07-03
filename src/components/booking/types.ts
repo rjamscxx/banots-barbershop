@@ -1,9 +1,9 @@
-import type { Service } from "@/lib/booking-data";
+import type { ServiceRecord } from "@/lib/settings-data";
 
 export type BookingStep = "services" | "datetime" | "details" | "payment" | "confirmation";
 
 export type BookingState = {
-  service: Service | null;
+  service: ServiceRecord | null;
   date: string | null;
   time: string | null;
   clientName: string;

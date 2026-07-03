@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { TIME_SLOTS } from "@/lib/booking-data";
-import { getBookedSlotsForDate } from "@/app/book/actions";
+import { getSlotsForDate, type SlotInfo } from "@/app/book/actions";
 import { StepHeader } from "./StepHeader";
 
 function nextOpenDays(count: number) {
@@ -33,14 +32,14 @@ export function DateTimeStep({
   onNext,
 }: DateTimeStepProps) {
   const days = nextOpenDays(7);
-  const [takenSlots, setTakenSlots] = useState<Set<string>>(new Set());
+  const [slotInfos, setSlotInfos] = useState<SlotInfo[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
 
   useEffect(() => {
     if (!date) return;
     setLoadingSlots(true);
-    getBookedSlotsForDate(date).then((slots) => {
-      setTakenSlots(new Set(slots));
+    getSlotsForDate(date).then((infos) => {
+      setSlotInfos(infos);
       setLoadingSlots(false);
     });
   }, [date]);
@@ -83,30 +82,36 @@ export function DateTimeStep({
         <p className="mt-6 text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-600">
           {loadingSlots ? "Checking availability…" : "Available times"}
         </p>
-        <div className="mt-3 grid grid-cols-3 gap-2">
-          {TIME_SLOTS.map((slot) => {
-            const isTaken = takenSlots.has(slot);
-            const isSelected = time === slot;
-            return (
-              <button
-                key={slot}
-                disabled={isTaken || !date || loadingSlots}
-                onClick={() => onSelectTime(slot)}
-                className={`rounded-xl border px-3 py-2.5 text-sm font-bold transition-all ${
-                  isTaken
-                    ? "border-zinc-800 text-zinc-700 line-through cursor-not-allowed"
-                    : isSelected
-                      ? "border-brand-gold bg-brand-gold text-brand-black"
-                      : !date || loadingSlots
-                        ? "border-zinc-800 text-zinc-700"
-                        : "border-zinc-800 text-zinc-300 hover:border-zinc-500 hover:text-white"
-                }`}
-              >
-                {slot}
-              </button>
-            );
-          })}
-        </div>
+
+        {date && !loadingSlots && slotInfos.length === 0 ? (
+          <p className="mt-4 text-sm text-zinc-500">
+            Closed this day — pick another date.
+          </p>
+        ) : (
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            {slotInfos.map(({ time: slot, taken }) => {
+              const isSelected = time === slot;
+              return (
+                <button
+                  key={slot}
+                  disabled={taken || !date || loadingSlots}
+                  onClick={() => onSelectTime(slot)}
+                  className={`rounded-xl border px-3 py-2.5 text-sm font-bold transition-all ${
+                    taken
+                      ? "border-zinc-800 text-zinc-700 line-through cursor-not-allowed"
+                      : isSelected
+                        ? "border-brand-gold bg-brand-gold text-brand-black"
+                        : !date || loadingSlots
+                          ? "border-zinc-800 text-zinc-700"
+                          : "border-zinc-800 text-zinc-300 hover:border-zinc-500 hover:text-white"
+                  }`}
+                >
+                  {slot}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {!date && (
           <p className="mt-4 text-xs text-zinc-700">Select a date to see available times.</p>

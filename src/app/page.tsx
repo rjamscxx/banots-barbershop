@@ -1,9 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getNextOpenSlotToday, getWeeklyBookingCount } from "@/lib/dashboard-data";
+import { getShopSettings, getActiveServices } from "@/lib/settings-data";
+import { formatPeso } from "@/lib/booking-data";
 
 export const dynamic = "force-dynamic";
-import { SHOP_SETTINGS, formatPeso } from "@/lib/dashboard-shared";
 import { Reveal } from "@/components/landing/Reveal";
 import { RevealHeading } from "@/components/landing/RevealHeading";
 import { StaggerList, StaggerItem } from "@/components/landing/StaggerList";
@@ -85,14 +86,21 @@ const TICKER = [
 ];
 
 export default async function Home() {
-  const [nextSlot, weeklyCount] = await Promise.all([
+  const [nextSlot, weeklyCount, settings, services] = await Promise.all([
     getNextOpenSlotToday(),
     getWeeklyBookingCount(),
+    getShopSettings(),
+    getActiveServices(),
   ]);
 
-  const hours = SHOP_SETTINGS.workingHours[0];
-  const sunday = SHOP_SETTINGS.workingHours[1];
-  const serviceCount = SHOP_SETTINGS.services.length;
+  const weekdayEntry = settings.hours.find((h) => h.day === "Mon") ?? settings.hours.find((h) => !h.closed);
+  const sundayEntry = settings.hours.find((h) => h.day === "Sun");
+  const weekdayLabel = "Mon-Sat";
+  const weekdayOpen = weekdayEntry?.open ?? "9:00 AM";
+  const weekdayClose = weekdayEntry?.close ?? "7:00 PM";
+  const sundayLabel = sundayEntry?.day ?? "Sun";
+  const sundayOpen = sundayEntry?.closed ? "Closed" : (sundayEntry?.open ?? "Closed");
+  const serviceCount = services.length;
 
   return (
     <main className="flex flex-1 flex-col bg-white">
@@ -204,7 +212,7 @@ export default async function Home() {
           </div>
 
           <StaggerList className="mt-8">
-            {SHOP_SETTINGS.services.map((service, i) => (
+            {services.map((service, i) => (
               <StaggerItem key={service.name}>
                 <div
                   className={`service-row group -mx-3 flex cursor-default items-center justify-between rounded-lg border-t border-zinc-800 px-3 py-5 transition-colors hover:bg-white/[0.04] ${
@@ -419,7 +427,7 @@ export default async function Home() {
               Book a slot
             </Link>
             <span className="text-xs text-zinc-600">
-              {hours.day} &middot; {hours.openTime}–{hours.closeTime}
+              {weekdayLabel} &middot; {weekdayOpen}–{weekdayClose}
             </span>
           </div>
         </Reveal>
@@ -435,7 +443,7 @@ export default async function Home() {
                 Banot&apos;s<br />Barbershop
               </span>
               <p className="mt-3 text-xs leading-relaxed text-zinc-400">
-                {SHOP_SETTINGS.address}
+                {settings.address}
               </p>
               <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-300">
                 Book · Pay · Show up.
@@ -448,12 +456,12 @@ export default async function Home() {
               </p>
               <div className="mt-3 space-y-1.5">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-zinc-500">{hours.day}</span>
-                  <span className="font-semibold text-foreground">{hours.openTime} – {hours.closeTime}</span>
+                  <span className="text-zinc-500">{weekdayLabel}</span>
+                  <span className="font-semibold text-foreground">{weekdayOpen} – {weekdayClose}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-zinc-500">{sunday.day}</span>
-                  <span className="font-semibold text-zinc-400">{sunday.openTime}</span>
+                  <span className="text-zinc-500">{sundayLabel}</span>
+                  <span className="font-semibold text-zinc-400">{sundayOpen}</span>
                 </div>
               </div>
             </div>

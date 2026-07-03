@@ -1,16 +1,28 @@
 "use client";
 
-import { useState } from "react";
-import { TIME_SLOTS } from "@/lib/booking-data";
-import { SHOP_SETTINGS, formatPeso, type Client } from "@/lib/dashboard-shared";
+import { useState, useEffect } from "react";
+import type { ServiceRecord } from "@/lib/settings-data";
+import { formatPeso, type Client } from "@/lib/dashboard-shared";
 import { createWalkIn } from "@/app/dashboard/walk-in/actions";
+import { getSlotsForDate, type SlotInfo } from "@/app/book/actions";
 
 const inputCls = "h-12 rounded-xl border border-divider bg-white px-4 text-base text-foreground outline-none transition-colors placeholder:text-zinc-300 focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/10";
 const selectCls = "h-12 rounded-xl border border-divider bg-white px-4 text-base text-foreground outline-none focus:border-brand-gold";
 
-export function WalkInForm({ clients }: { clients: Client[] }) {
+export function WalkInForm({ clients, services }: { clients: Client[]; services: ServiceRecord[] }) {
   const [clientChoice, setClientChoice] = useState("new");
   const today = new Date().toISOString().slice(0, 10);
+  const [date, setDate] = useState(today);
+  const [slots, setSlots] = useState<SlotInfo[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+
+  useEffect(() => {
+    setLoadingSlots(true);
+    getSlotsForDate(date).then((s) => {
+      setSlots(s);
+      setLoadingSlots(false);
+    });
+  }, [date]);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -57,8 +69,8 @@ export function WalkInForm({ clients }: { clients: Client[] }) {
         <label className="flex flex-col gap-1.5">
           <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Service</span>
           <select name="service" className={selectCls}>
-            {SHOP_SETTINGS.services.map((s) => (
-              <option key={s.name} value={s.name}>
+            {services.map((s) => (
+              <option key={s.id} value={s.name}>
                 {s.name} · {formatPeso(s.price)}
               </option>
             ))}
@@ -71,16 +83,23 @@ export function WalkInForm({ clients }: { clients: Client[] }) {
             <input
               name="date"
               type="date"
-              defaultValue={today}
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
               className={inputCls}
             />
           </label>
           <label className="flex flex-1 flex-col gap-1.5">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Time</span>
-            <select name="time" className={selectCls}>
-              {TIME_SLOTS.map((slot) => (
-                <option key={slot} value={slot}>{slot}</option>
-              ))}
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+              Time{loadingSlots ? " …" : ""}
+            </span>
+            <select name="time" className={selectCls} disabled={loadingSlots || slots.length === 0}>
+              {slots.length === 0 && !loadingSlots ? (
+                <option value="">Closed / no slots</option>
+              ) : (
+                slots.map(({ time: slot }) => (
+                  <option key={slot} value={slot}>{slot}</option>
+                ))
+              )}
             </select>
           </label>
         </div>

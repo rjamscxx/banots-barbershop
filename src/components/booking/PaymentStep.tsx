@@ -1,11 +1,13 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { PAYMENT_METHODS, type Service, formatPeso } from "@/lib/booking-data";
+import { formatPeso } from "@/lib/booking-data";
+import type { ServiceRecord, PaymentMethodRecord } from "@/lib/settings-data";
 import { StepHeader } from "./StepHeader";
 
 type PaymentStepProps = {
-  service: Service | null;
+  service: ServiceRecord | null;
+  paymentMethods: PaymentMethodRecord[];
   paymentMethod: string | null;
   proofImageUrl: string | null;
   error?: string | null;
@@ -19,6 +21,7 @@ type PaymentStepProps = {
 
 export function PaymentStep({
   service,
+  paymentMethods,
   paymentMethod,
   proofImageUrl,
   error,
@@ -30,7 +33,6 @@ export function PaymentStep({
   onNext,
 }: PaymentStepProps) {
   const [isUploading, setIsUploading] = useState(false);
-  const [qrError, setQrError] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -45,7 +47,7 @@ export function PaymentStep({
     if (data.url) onUploadProof(data.url);
   }
 
-  const qrSrc = paymentMethod ? `/qr/${paymentMethod}.png` : null;
+  const selectedMethod = paymentMethods.find((m) => m.id === paymentMethod) ?? null;
 
   return (
     <div className="flex flex-1 flex-col bg-brand-black">
@@ -62,12 +64,12 @@ export function PaymentStep({
 
         {/* Payment method selector */}
         <div className="mt-5 flex gap-2 overflow-x-auto pb-2">
-          {PAYMENT_METHODS.map((method) => {
+          {paymentMethods.map((method) => {
             const isSelected = paymentMethod === method.id;
             return (
               <button
                 key={method.id}
-                onClick={() => { onSelectMethod(method.id); setQrError(false); }}
+                onClick={() => onSelectMethod(method.id)}
                 className={`min-w-fit rounded-full border px-4 py-2 text-sm font-bold transition-all ${
                   isSelected
                     ? "border-brand-gold bg-brand-gold text-brand-black"
@@ -81,24 +83,30 @@ export function PaymentStep({
         </div>
 
         {/* QR display */}
-        {qrSrc ? (
+        {selectedMethod ? (
           <div className="mt-5 flex flex-col items-center rounded-2xl border border-zinc-800 bg-surface-dark py-6">
-            {qrError ? (
+            {selectedMethod.qrImageUrl ? (
+              <img
+                src={selectedMethod.qrImageUrl}
+                alt={`${selectedMethod.label} QR code`}
+                className="h-40 w-40 rounded-xl object-contain"
+              />
+            ) : (
               <div className="flex h-40 w-40 flex-col items-center justify-center gap-2 rounded-xl border border-zinc-800 bg-brand-black text-center text-xs text-zinc-600">
                 <span>QR not set up yet</span>
                 <span className="text-[10px] text-zinc-700">Upload in Settings</span>
               </div>
-            ) : (
-              <img
-                src={qrSrc}
-                alt={`${paymentMethod} QR code`}
-                className="h-40 w-40 rounded-xl object-contain"
-                onError={() => setQrError(true)}
-              />
             )}
             <p className="mt-3 text-sm font-semibold text-zinc-300">
-              {PAYMENT_METHODS.find((m) => m.id === paymentMethod)?.label} &middot; Banot&apos;s Barbershop
+              {selectedMethod.label} &middot; Banot&apos;s Barbershop
             </p>
+            {(selectedMethod.accountName || selectedMethod.accountNumber) && (
+              <p className="mt-1 text-xs text-zinc-500">
+                {selectedMethod.accountName}
+                {selectedMethod.accountName && selectedMethod.accountNumber ? " · " : ""}
+                {selectedMethod.accountNumber}
+              </p>
+            )}
           </div>
         ) : null}
 

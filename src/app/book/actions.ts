@@ -5,16 +5,21 @@ import {
   addOnlineBooking,
   findOrCreateClient,
   isSlotTaken,
-  getBookingsByDate,
+  getActiveBookingsByDate,
   type BookingServiceSnapshot,
 } from "@/lib/dashboard-data";
+import { getSlotsForDateFromSettings } from "@/lib/settings-data";
 import { generateBookingReference } from "@/lib/booking-data";
 
-export async function getBookedSlotsForDate(date: string): Promise<string[]> {
-  const bookings = await getBookingsByDate(date);
-  return bookings
-    .filter((b) => b.status !== "rejected" && b.status !== "cancelled")
-    .map((b) => b.time as string);
+export type SlotInfo = { time: string; taken: boolean };
+
+export async function getSlotsForDate(date: string): Promise<SlotInfo[]> {
+  const [slots, bookings] = await Promise.all([
+    getSlotsForDateFromSettings(date),
+    getActiveBookingsByDate(date),
+  ]);
+  const taken = new Set(bookings.map((b) => b.time));
+  return slots.map((time) => ({ time, taken: taken.has(time) }));
 }
 
 type SubmitBookingInput = {

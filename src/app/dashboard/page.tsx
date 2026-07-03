@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { getBookingsByDate, getTodayStats, SHOP_SETTINGS, formatPeso } from "@/lib/dashboard-data";
+import { getBookingsByDate, getTodayStats, formatPeso } from "@/lib/dashboard-data";
+import { getShopSettings } from "@/lib/settings-data";
 import { BookingCard } from "@/components/dashboard/BookingCard";
 import { formatDate } from "@/lib/format";
 
@@ -9,9 +10,10 @@ function todayIso() {
 
 export default async function DashboardTodayPage() {
   const today = todayIso();
-  const [bookings, stats] = await Promise.all([
+  const [bookings, stats, settings] = await Promise.all([
     getBookingsByDate(today),
     getTodayStats(today),
+    getShopSettings(),
   ]);
 
   const todayLabel = new Date().toLocaleDateString("en-US", {
@@ -26,7 +28,7 @@ export default async function DashboardTodayPage() {
       {/* Header */}
       <div className="bg-brand-black px-6 pb-5 pt-6">
         <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-600">
-          {SHOP_SETTINGS.shopName}
+          {settings.shopName}
         </p>
         <h1 className="mt-1 font-[family-name:var(--font-bebas)] text-5xl text-white leading-none">
           Today
