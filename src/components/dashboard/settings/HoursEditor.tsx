@@ -64,6 +64,7 @@ export function HoursEditor({ hours }: { hours: DayHours[] }) {
             value={row.open}
             disabled={row.closed}
             onChange={(e) => setRow(i, { open: e.target.value })}
+            aria-label={`${row.day} open time`}
             className={selectCls}
           >
             {TIME_OPTIONS.map((t) => (
@@ -77,6 +78,7 @@ export function HoursEditor({ hours }: { hours: DayHours[] }) {
             value={row.close}
             disabled={row.closed}
             onChange={(e) => setRow(i, { close: e.target.value })}
+            aria-label={`${row.day} close time`}
             className={selectCls}
           >
             {TIME_OPTIONS.map((t) => (

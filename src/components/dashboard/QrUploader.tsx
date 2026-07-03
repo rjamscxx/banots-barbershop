@@ -34,10 +34,9 @@ export function QrUploader({ methodId, label, initialUrl }: Props) {
       return;
     }
     if (data.url) {
-      const blobUrl = `${data.url}?t=${Date.now()}`;
-      setUrl(blobUrl);
       const result = await setPaymentMethodQr(methodId, data.url);
-      if (!result.ok) setUploadError(result.error);
+      if (result.ok) setUrl(`${data.url}?t=${Date.now()}`);
+      else setUploadError(result.error);
     }
     if (inputRef.current) inputRef.current.value = "";
   }

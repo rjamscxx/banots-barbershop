@@ -28,28 +28,28 @@ export function ProfileForm({
 
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-xs text-zinc-500">
+      <label className="flex flex-col gap-1 text-xs text-zinc-500">
         Shop name
         <input
           className={field}
           value={form.shopName}
-          onChange={(e) => setForm({ ...form, shopName: e.target.value })}
+          onChange={(e) => { setForm({ ...form, shopName: e.target.value }); setSaved(false); }}
         />
       </label>
-      <label className="text-xs text-zinc-500">
+      <label className="flex flex-col gap-1 text-xs text-zinc-500">
         Address
         <input
           className={field}
           value={form.address}
-          onChange={(e) => setForm({ ...form, address: e.target.value })}
+          onChange={(e) => { setForm({ ...form, address: e.target.value }); setSaved(false); }}
         />
       </label>
-      <label className="text-xs text-zinc-500">
+      <label className="flex flex-col gap-1 text-xs text-zinc-500">
         Phone
         <input
           className={field}
           value={form.phone}
-          onChange={(e) => setForm({ ...form, phone: e.target.value })}
+          onChange={(e) => { setForm({ ...form, phone: e.target.value }); setSaved(false); }}
         />
       </label>
       {error && <p className="text-sm text-red-600">{error}</p>}

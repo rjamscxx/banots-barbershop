@@ -45,19 +45,8 @@ function MethodRow({ m }: { m: PaymentMethodRecord }) {
         )}
       </div>
 
-      {/* QR thumbnail + uploader */}
-      <div className="flex items-start gap-4">
-        {m.qrImageUrl ? (
-          <img
-            src={`${m.qrImageUrl}?v=${Date.now()}`}
-            className="h-24 w-24 rounded-lg border border-divider object-cover"
-            alt="QR"
-          />
-        ) : (
-          <div className="flex h-24 w-24 items-center justify-center rounded-lg border border-dashed border-zinc-200 bg-white text-xs text-zinc-400">
-            No QR yet
-          </div>
-        )}
+      {/* QR uploader (single source of truth for QR display) */}
+      <div className="flex items-start">
         <QrUploader methodId={m.id} label={m.label} initialUrl={m.qrImageUrl || undefined} />
       </div>
 
