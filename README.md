@@ -2,9 +2,18 @@
 
 A booking system for a one-chair barbershop. The owner cuts hair all day — he doesn't have time to be answering "are you free at 3?" messages between clients. So this lets people book themselves, and gives him a simple dashboard to run the day from.
 
+**Live:** [banots-barbershop.vercel.app](https://banots-barbershop.vercel.app) — the booking flow is public; the dashboard is the owner's.
+
+![Landing page](.github/screenshots/landing.png)
+
 ## How it works
 
 A client goes to the booking page and walks through a short wizard: pick a service, pick a date and time, leave their name and number. Services run ₱100–₱230.
+
+<table><tr>
+<td><img src=".github/screenshots/booking-services.png" alt="Step 1 — pick a service"/></td>
+<td><img src=".github/screenshots/booking-schedule.png" alt="Step 2 — pick a date and time"/></td>
+</tr></table>
 
 Payment is the part I spent the most time on. People here pay by GCash, Maya, GoTyme, or bank transfer — so after booking, the client uploads a screenshot of their payment as proof. The booking comes in as `pending_verification`, and the barber confirms it from his side once he sees the proof landed.
 
